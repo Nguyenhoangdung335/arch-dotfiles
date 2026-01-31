@@ -1,0 +1,202 @@
+" .ideavimrc is a configuration file for IdeaVim plugin. It uses
+"   the same commands as the original .vimrc configuration.
+" You can find a list of commands here: https://jb.gg/h38q75
+" Find more examples here: https://jb.gg/share-ideavimrc
+
+
+"" -- Suggested options --
+" Show a few lines of context around the cursor. Note that this makes the
+" text scroll if you mouse-click near the start or end of the window.
+" set scrolloff=5
+
+" Do incremental searching.
+" set incsearch
+
+" Don't use Ex mode, use Q for formatting.
+map gf gq
+
+" --- Enable IdeaVim plugins https://jb.gg/ideavim-plugins
+
+" Highlight copied text
+Plug 'machakann/vim-highlightedyank'
+" Commentary plugin
+Plug 'tpope/vim-commentary'
+
+
+"" -- Map IDE actions to IdeaVim -- https://jb.gg/abva4t
+"" Map \r to the Reformat Code action
+"map \r <Action>(ReformatCode)
+
+"" Map <leader>d to start debug
+"map <leader>d <Action>(Debug)
+
+"" Map \b to toggle the breakpoint on the current line
+"map \b <Action>(ToggleLineBreakpoint)
+
+"======================================================================
+" General Options
+"======================================================================
+
+" Set line numbers and relative numbering
+set number
+set relativenumber
+
+" Highlight the current line
+set cursorline
+highlight CursorLine guibg=#17191f gui=NONE
+highlight CursorLineNr guibg=NONE guifg=#88C0D0
+
+" Set tab width and expand tabs to spaces
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+set expandtab
+
+" Use the system clipboard
+set clipboard=unnamedplus
+
+" Enable smart indentation
+set smartindent
+
+" Disable line wrapping
+set nowrap
+
+" Enable GUI colors
+set termguicolors
+
+" Set scroll offset
+set scrolloff=15
+
+" Always show the sign column
+set signcolumn=yes
+
+" Append '@-@' to the list of characters for file names
+set isfname+=@-@
+
+" Set the time in milliseconds for the CursorHold event
+set updatetime=50
+
+" Display a color column at 120 characters
+set colorcolumn=120
+
+" Show the current mode
+set showmode
+
+" Set the undo directory
+let &undodir = stdpath('data') . '/undodir'
+if !isdirectory(&undodir)
+    call mkdir(&undodir, 'p')
+endif
+set undofile
+
+"======================================================================
+" Key Remappings
+"======================================================================
+
+" Set the leader key to space
+let mapleader = " "
+
+" Open the command-line window
+nnoremap <leader>pv :
+
+" Move selected block of text in Visual Mode up or down
+vnoremap J :m '>+1<CR>gv=gv
+vnoremap K :m '<-2<CR>gv=gv
+
+" Yank the absolute path of the current file to the system register
+function! YankAbsolutePath()
+    let path = expand('%:p')
+    let @+ = path
+    echo "Yanked absolute path to system register: " . path
+endfunction
+nnoremap <silent> <leader>ya :call YankAbsolutePath()<CR>
+
+" Yank the relative path of the current file to the system register
+function! YankRelativePath()
+    let path = expand('%:p:.')
+    if path[0] != '/'
+        let path = './' . path
+    endif
+    let @+ = path
+    echo "Yanked relative path to system register: " . path
+endfunction
+nnoremap <silent> <leader>yr :call YankRelativePath()<CR>
+
+" Yank the selected text into the system register
+vnoremap <leader>y "+y
+
+" Indent and outdent in visual mode
+vnoremap <Tab> >gv
+vnoremap <S-Tab> <gv
+
+" Toggle cursorline
+nnoremap <leader>ct :set cursorline!<CR>
+
+" Remap Esc key for faster escape in insert mode
+inoremap jk <Esc>
+inoremap kj <Esc>
+
+" Clear search highlighting
+nnoremap <silent> <leader>nh :nohlsearch<CR>
+
+" Center screen when scrolling
+nnoremap <C-d> <C-d>zz
+nnoremap <C-u> <C-u>zz
+nnoremap G Gzz
+nnoremap gg ggzz
+
+" Insert a new line below the current line without entering insert mode
+nnoremap <CR> myo<Esc>'y
+
+" Paste without replacing the default register
+xnoremap <leader>p "_dP
+xnoremap <leader>P "_dp
+
+" Substitute selected text in the current buffer
+vnoremap <leader>s "gy:%s/\V<C-r>g//g<Left><Left>
+vnoremap <leader>cs "gy:%s/\V<C-r>g//gc<Left><Left><Left>
+
+" Toggle wrap
+nnoremap <leader>ww :set wrap!<CR>
+
+" Switch between buffers
+nnoremap <C-{> :bprevious<CR>
+nnoremap <C-}> :bnext<CR>
+
+" --- Netrw Equivalent Mapping ---
+" The following function provides a similar functionality to the original
+" netrw_copy_with_prompt. It's intended to be used in the IDE's project view.
+function! CopyWithPrompt()
+    let current_path = expand('%:p')
+    if !filereadable(current_path) && !isdirectory(current_path)
+        echoerr "Error: Not a valid file or directory."
+        return
+    endif
+    let current_name = expand('%')
+    let new_name = input("Copy to: ", current_name)
+    if new_name == ""
+        echo "Copy cancelled."
+        return
+    endif
+    let cmd = 'cp -r ' . shellescape(current_path) . ' ' . shellescape(new_name)
+    call system(cmd)
+    " Note: Automatic refreshing of the project view depends on the IDE.
+    echo "Copied '" . current_name . "' to '" . new_name . "'"
+endfunction
+
+" In IdeaVim, there isn't a direct equivalent of the 'netrw' filetype.
+" This mapping is global. You can manually trigger it when a file is selected
+" in the project view.
+nnoremap <leader>cp :call CopyWithPrompt()<CR>
+
+" --- Completion Mappings ---
+" The original cmp mappings are specific to a Neovim plugin. In IdeaVim,
+" it's more effective to map these to the IDE's built-in code completion actions.
+" Trigger code completion
+inoremap <C-.> <C-@>
+" Navigate completion suggestions
+inoremap <expr> <C-n> pumvisible() ? "\<Down>" : "\<C-n>"
+inoremap <expr> <C-p> pumvisible() ? "\<Up>" : "\<C-p>"
+" Show intention actions with <leader>a
+nnoremap <leader>ca :action EditorPopupMenu<CR>
+vnoremap <leader>ca :action EditorPopupMenu<CR>
