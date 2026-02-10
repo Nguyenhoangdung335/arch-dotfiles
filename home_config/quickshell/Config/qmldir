@@ -1,0 +1,6 @@
+module Config
+
+singleton Global 1.0 Global.qml
+singleton Theme 1.0 Theme.qml
+singleton Debug 1.0 Debug.qml
+

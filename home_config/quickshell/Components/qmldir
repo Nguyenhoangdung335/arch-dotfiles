@@ -1,0 +1,7 @@
+module Components
+
+GlassCard 1.0 GlassCard.qml
+MaterialButton 1.0 MaterialButton.qml
+ThemeMenuCard 1.0 ThemeMenuCard.qml
+ThemeToggleButton 1.0 ThemeToggleButton.qml
+VariantChip 1.0 VariantChip.qml

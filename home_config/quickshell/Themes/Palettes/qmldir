@@ -1,0 +1,10 @@
+module Themes.Palettes
+# Catppuccin Family
+singleton Catppuccin_Mocha 1.0 Catppuccin_Mocha.qml
+singleton Catppuccin_Frappe 1.0 Catppuccin_Frappe.qml
+singleton Catppuccin_Latte 1.0 Catppuccin_Latte.qml
+singleton Catppuccin_Macchiato 1.0 Catppuccin_Macchiato.qml
+
+# Dracula Family
+singleton Dracula_Dracula 1.0 Dracula_Dracula.qml
+singleton Dracula_Alucard 1.0 Dracula_Alucard.qml

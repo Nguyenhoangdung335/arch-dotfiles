@@ -1,0 +1,4 @@
+module Modules.ThemeSwitcher
+
+ThemeSwitcher 1.0 ThemeSwitcher.qml
+FloatingThemeSwitcher 1.0 FloatingThemeSwitcher.qml

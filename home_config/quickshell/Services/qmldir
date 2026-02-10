@@ -1,0 +1,2 @@
+module Services
+singleton ThemeModel 1.0 ThemeModel.qml

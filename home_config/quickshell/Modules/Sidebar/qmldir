@@ -1,0 +1,5 @@
+module Modules.Sidebar
+
+Sidebar 1.0 Sidebar.qml
+ThemeTab 1.0 ThemeTab.qml
+WallpaperTab 1.0 WallpaperTab.qml
