@@ -1,0 +1,65 @@
+return {}
+-- return {
+-- 	{
+-- 		"zbirenbaum/copilot.lua",
+-- 		cmd = "Copilot", -- Lazy-load on :Copilot commands
+-- 		event = "InsertEnter", -- Or on enter-insert to speed startup
+-- 		opts = {
+-- 			suggestion = {
+-- 				enabled = false, -- Enable inline suggestions
+-- 				auto_trigger = true, -- Pop up as you type
+-- 				hide_during_completion = true, -- Don’t clash with cmp menu :contentReference[oaicite:0]{index=0}
+-- 				keymap = {
+-- 					accept = "<C-CR>", -- e.g. Ctrl-L to accept suggestion
+-- 					next = "<M-]>", -- Meta-] for next
+-- 					prev = "<M-[>", -- Meta-[ for previous
+-- 				},
+-- 			},
+-- 			panel = { enabled = false }, -- Disable the separate Copilot panel :contentReference[oaicite:1]{index=1}
+-- 		},
+-- 		config = function(_, opts)
+-- 			-- require("copilot").setup(opts)
+-- 			require("copilot").setup(vim.tbl_extend("force", opts, {
+-- 				filetypes = {
+-- 					yaml = true, -- Explicitly enable YAML
+-- 					markdown = false, -- Disable markdown
+-- 					help = false, -- Disable help files
+-- 					["*"] = true, -- Enable all other filetypes
+-- 				},
+-- 			}))
+-- 		end,
+-- 	},
+-- 	{
+-- 		"zbirenbaum/copilot-cmp",
+-- 		after = "copilot.lua", -- Load only once copilot.lua is ready
+-- 		opts = {}, -- Use defaults: merges copilot into cmp sources
+-- 		config = function(_, opts)
+-- 			require("copilot_cmp").setup(opts) -- Initialize the cmp extension :contentReference[oaicite:2]{index=2}
+-- 		end,
+-- 	},
+-- 	{
+-- 		"CopilotC-Nvim/CopilotChat.nvim",
+-- 		dependencies = {
+-- 			{ "zbirenbaum/copilot.lua" },
+-- 			{ "nvim-lua/plenary.nvim" },
+-- 		},
+-- 		build = "make tiktoken",
+-- 		opts = {
+-- 			mappings = {
+-- 				close = {
+-- 					normal = "q",
+-- 					insert = "<C-c>",
+-- 				},
+-- 				reset = {
+-- 					normal = "<C-R>",
+-- 					insert = "<C-R>",
+-- 				},
+-- 			},
+-- 		},
+-- 		cmd = { "CopilotChat", "CopilotChatOpen" },
+-- 		keys = {
+-- 			{ "<leader>cc", "<cmd>CopilotChat<cr>", desc = "Copilot Chat" },
+-- 			{ "<leader>co", "<cmd>CopilotChatOpen<cr>", desc = "Copilot Chat Open" },
+-- 		},
+-- 	},
+-- }
