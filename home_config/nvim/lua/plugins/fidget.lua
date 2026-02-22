@@ -1,6 +1,7 @@
 return {
 	{
 		"j-hui/fidget.nvim",
+		lazy = false,
 		opts = {
 			-- Options related to the notification window and buffer
 			notification = {
