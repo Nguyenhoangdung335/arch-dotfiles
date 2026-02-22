@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Quickshell Wallpaper Thumbnails
+Exec=/home/dung/git_projects/arch-dotfiles/home_config/quickshell/scripts/generate-thumbnails.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Comment=Generate wallpaper thumbnails for Quickshell

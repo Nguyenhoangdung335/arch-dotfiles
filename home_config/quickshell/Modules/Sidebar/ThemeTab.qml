@@ -6,8 +6,8 @@ import QtQuick.Controls
 import "../../Themes" as Th
 import "../../Config" as Cfg
 import "../../Services" as Svc
-import "../../Models" as Models
-import "../../JSUtils/Logging.js" as Logging
+// import "../../Models" as Models
+// import "../../JSUtils/Logging.js" as Logging
 
 // Theme palette selection tab with smooth animations
 Item {
@@ -334,12 +334,6 @@ Item {
         property bool isActive: false
 
         signal activate()
-
-        Component.onCompleted: {
-            // chip.themeData = Svc.ThemeModel.dataMap[chip.family][chip.variant]
-            Logging.info("Theme Chip Data: ", chip.themeData)
-        }
-
 
         width: 240
         height: 50
