@@ -77,7 +77,7 @@ return {
 		config = function()
 			vim.opt.foldcolumn = "1" -- '0' is not bad
 
-			vim.optfoldlevel = 99 -- Using ufo provider need a large value, otherwise the fold will not open
+			vim.opt.foldlevel = 99 -- Using ufo provider need a large value, otherwise the fold will not open
 			vim.opt.foldlevelstart = 99 -- Using ufo provider need a large value, otherwise the fold will not open
 			vim.opt.foldenable = true -- Enable folding by default
 			vim.opt.fillchars = {
