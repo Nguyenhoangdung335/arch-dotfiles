@@ -1,22 +1,5 @@
 -- ./lua/dung/global.lua
-
-local is_termux = vim.env.PREFIX and vim.env.PREFIX:match("com.termux") ~= nil
-vim.g.is_termux = is_termux
-
-if is_termux then
-  vim.g.clipboard = {
-    name = "termux",
-    copy = {
-      ["+"] = "termux-clipboard-set",
-      ["*"] = "termux-clipboard-set",
-    },
-    paste = {
-      ["+"] = "termux-clipboard-get",
-      ["*"] = "termux-clipboard-get",
-    },
-    cache_enabled = 0,
-  }
-end
+vim.g.is_termux = vim.env.PREFIX and vim.env.PREFIX:match("com.termux") ~= nil
 
 local M = {}
 

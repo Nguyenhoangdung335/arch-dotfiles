@@ -1,5 +1,5 @@
+require("dung.global")
 require("dung.set")
 require("dung.remap")
 require("dung.im-switch")
 require("dung.autocmd")
-require("dung.global")
