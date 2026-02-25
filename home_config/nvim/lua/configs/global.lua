@@ -16,4 +16,16 @@ function M.notify(msg, level, opts)
 	end
 end
 
+function M.get_color(group_name, attr)
+	local hl = vim.api.nvim_get_hl(0, { name = group_name, link = false })
+	while hl.link do
+		hl = vim.api.nvim_get_hl(0, { name = hl.link, link = false })
+	end
+	local color_int = hl[attr]
+	if not color_int then
+		return nil
+	end
+	return string.format("#%06x", color_int)
+end
+
 return M
