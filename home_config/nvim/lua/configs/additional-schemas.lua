@@ -1,4 +1,4 @@
-local curl = require("plenary.curl")
+-- ./lua/config/additional-schemas.lua
 local M = {
 	schemas_catalog = "datreeio/CRDs-catalog",
 	schema_catalog_branch = "main",
@@ -11,6 +11,7 @@ local M = {
 M.schema_url = "https://raw.githubusercontent.com/" .. M.schemas_catalog .. "/" .. M.schema_catalog_branch
 
 M.list_github_tree = function()
+	local curl = require("plenary.curl")
 	local url = M.github_base_api_url .. "/" .. M.schemas_catalog .. "/git/trees/" .. M.schema_catalog_branch
 	local response = curl.get(url, { headers = M.github_headers, query = { recursive = 1 } })
 	local body = vim.fn.json_decode(response.body)
@@ -33,7 +34,7 @@ M.init = function()
 		local schema_url = M.schema_url .. "/" .. selection
 		local schema_modeline = "# yaml-language-server: $schema=" .. schema_url
 		vim.api.nvim_buf_set_lines(0, 0, 0, false, { schema_modeline })
-		vim.notify("Added schema modeline: " .. schema_modeline)
+		require("configs.global").notify("Added schema modeline: " .. schema_modeline)
 	end)
 end
 return M

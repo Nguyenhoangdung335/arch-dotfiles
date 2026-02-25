@@ -1,0 +1,6 @@
+require("configs.global")
+require("configs.set")
+require("configs.mappings")
+require("configs.im-switch")
+require("configs.autocmd")
+require("configs.termux")

@@ -1,5 +1,5 @@
 -- ./lua/dung/autocmd.lua
-local global = require("dung.global")
+local global = require("configs.global")
 local M = {}
 
 -- Select box for swap files
