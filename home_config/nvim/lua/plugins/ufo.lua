@@ -147,7 +147,6 @@ return {
 			-- Highlight the fold column
 			-- vim.api.nvim_set_hl(0, "Folded", { fg = "#88C0D0", bg = "#2E3440", bold = true })
 			vim.api.nvim_set_hl(0, "FoldColumn", { fg = "#EBCB8B", bg = "#282828" })
-			vim.opt.runtimepath:append("~/.config/nvim/lua")
 			vim.api.nvim_set_hl(0, "@region.marker", { fg = "#88C0D0", bold = true, italic = true })
 
 			vim.keymap.set("n", "zR", require("ufo").openAllFolds, { desc = "Open all folds" })

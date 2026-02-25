@@ -1,2 +1,2 @@
-require("dung")
-require("config.lazy")
+require("lazy-setup")
+require("configs")

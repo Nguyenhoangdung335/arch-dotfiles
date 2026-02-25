@@ -1,21 +1,22 @@
 return {
 	"mfussenegger/nvim-lint",
 	event = { "BufWritePost", "BufReadPost", "InsertLeave" },
-	config = function()
-		require("lint").linters_by_ft = {
-			-- Example linters, add others as needed
+	opts = {
+		linters_by_ft = {
 			javascript = { "eslint_d" },
 			typescript = { "eslint_d" },
 			javascriptreact = { "eslint_d" },
 			typescriptreact = { "eslint_d" },
 			proto = { "buf" },
 			dockerfile = { "trivy" },
-		}
-
-		-- Run linting on events
+		},
+	},
+	config = function(_, opts)
+		local lint = require("lint")
+		lint.linters_by_ft = opts.linters_by_ft
 		vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
 			callback = function()
-				require("lint").try_lint()
+				lint.try_lint()
 			end,
 		})
 	end,

@@ -26,7 +26,7 @@ return {
 				disable_filetype = { "text" },
 				ignored_next_char = "[%w%(%[%{]",
 				map_cr = true,
-				map_c_w = false,
+				map_c_w = false, -- False due to conflict with telescope picker prompt
 				check_ts = true,
 				ts_config = {
 					lua = { "string", "source" }, -- Don't pair inside Lua strings
@@ -34,7 +34,7 @@ return {
 				},
 				fast_wrap = {
 					map = "<M-e>", -- Press Alt+e to trigger fast wrap
-					chars = { "{", "[", "(", '"', "'", "`" },
+					chars = { "{", "[", "(", '"', "'", "`", "<" },
 					pattern = string.gsub([[ [%'%"%)%>%]%)%}%,] ]], "%s+", ""),
 					offset = 0,
 					end_key = "$",

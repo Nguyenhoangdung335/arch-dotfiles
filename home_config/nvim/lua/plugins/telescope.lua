@@ -1,12 +1,33 @@
+local focus_preview = function(prompt_bufnr)
+	local action_state = require("telescope.actions.state")
+	local picker = action_state.get_current_picker(prompt_bufnr)
+	local prompt_win = picker.prompt_win
+	local previewer = picker.previewer
+	local winid = previewer.state.winid
+	local bufnr = previewer.state.bufnr
+
+	-- Lock preview buffer
+	vim.bo[bufnr].modifiable = false
+	vim.bo[bufnr].readonly = true
+	vim.bo[bufnr].buftype = "nofile"
+
+	-- Return to prompt input buffer
+	vim.keymap.set("n", "<Tab>", function()
+		vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", prompt_win))
+	end, { buffer = bufnr })
+
+	vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", winid))
+end
+
 return {
 	{
 		"nvim-telescope/telescope.nvim",
-		-- tag = "0.1.8",
 		cond = not vim.g.vscode,
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			"BurntSushi/ripgrep",
 			"sharkdp/fd",
+			"nvim-telescope/telescope-ui-select.nvim",
 		},
 		keys = {
 			{
@@ -91,6 +112,13 @@ return {
 				end,
 				desc = "Tags",
 			},
+			{
+				"<leader>pn",
+				function()
+					require("telescope").extensions.fidget.fidget()
+				end,
+				desc = "Fidget Notifications",
+			},
 		},
 		opts = {
 			defaults = {
@@ -102,62 +130,56 @@ return {
 					"--line-number",
 					"--column",
 					"--smart-case",
-					"--follow", -- 👈 follow symlinks
+					"--follow",
 				},
 				mappings = {
 					n = {
 						["<M-p>"] = require("telescope.actions.layout").toggle_preview,
-						["<C-q>"] = require("telescope.actions").close,
+						["<Esc>"] = require("telescope.actions").close,
+						["<Tab>"] = focus_preview,
 					},
 					i = {
 						["<M-p>"] = require("telescope.actions.layout").toggle_preview,
-						["<C-q>"] = require("telescope.actions").close,
+						["<Esc>"] = require("telescope.actions").close,
+						["<Tab>"] = focus_preview,
+						-- ["<C-w>"] = function()
+						-- 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-w>", true, false, true), "n", true)
+						-- end,
+
+						-- -- Similarly for <C-u> to ensure it's clean:
+						-- ["<C-u>"] = function()
+						-- 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-u>", true, false, true), "n", true)
+						-- end,
 					},
 				},
-			},
-			pickers = {
-				find_files = {
-					-- find_command = {
-					-- 	"fd",
-					-- 	"--type",
-					-- 	"f",
-					-- 	"--hidden",
-					-- 	"--follow",
-					-- 	"--exclude",
-					-- 	".git",
-					-- },
-					follow = true,
-					hidden = true,
+				layout_strategy = "horizontal", -- important
+				layout_config = {
+					horizontal = { preview_width = 0.6 },
+					vertical = { preview_height = 0.6 },
 				},
+			},
+			pickers = { find_files = { follow = true, hidden = true } },
+			extensions = {
+				["ui-select"] = { require("telescope.themes").get_dropdown({}) },
 			},
 		},
 		config = function(_, opts)
 			local telescope = require("telescope")
-			telescope.load_extension("fidget")
+			local has_fidget = pcall(require, "fidget")
+			local has_ui_select = pcall(require, "telescope-ui-select")
+			local has_harpoon = pcall(require, "harpoon")
+
+			if has_fidget then
+				telescope.load_extension("fidget")
+			end
+			if has_ui_select then
+				telescope.load_extension("ui-select")
+			end
+			if has_harpoon then
+				telescope.load_extension("harpoon")
+			end
 			telescope.setup(opts)
-
-			--[[ local builtin = require("telescope.builtin")
-
-			vim.keymap.set("n", "<leader>pf", builtin.find_files, { desc = "Telescope find all files" })
-			vim.keymap.set("n", "<leader>pg", builtin.live_grep, { desc = "Telescope live grep" })
-			vim.keymap.set("n", "<leader>pb", builtin.buffers, { desc = "Telescope buffers" })
-			vim.keymap.set("n", "<C-p>", builtin.git_files, { desc = "find Git files" })
-			vim.keymap.set("n", "<leader>ps", function() end) ]]
 			-- local trouble_telescope = require("trouble.sources.telescope")
-		end,
-	},
-	{
-		"nvim-telescope/telescope-ui-select.nvim",
-		cond = not vim.g.vscode,
-		config = function()
-			require("telescope").setup({
-				extensions = {
-					["ui-select"] = {
-						require("telescope.themes").get_dropdown({}),
-					},
-				},
-			})
-			require("telescope").load_extension("ui-select")
 		end,
 	},
 }
