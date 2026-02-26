@@ -365,8 +365,45 @@ function M.swap_preview_autocmd_callback()
 	local bufnr = vim.api.nvim_get_current_buf()
 	local filepath = vim.api.nvim_buf_get_name(bufnr)
 
+	-- Default to opening read-only in the background to prevent immediate overwrites
 	vim.v.swapchoice = "o"
 
+	-- Check if the swap file is owned by a LIVING process
+	local info = vim.fn.swapinfo(captured_swap)
+	if info and type(info.pid) == "number" then
+		---@diagnostic disable-next-line: undefined-field
+		local ok, res = pcall((vim.uv or vim.loop).kill, info.pid, 0)
+		if ok and res == 0 then
+			-- The process is actively running in another Tmux pane/terminal!
+			vim.schedule(function()
+				if not vim.api.nvim_buf_is_valid(bufnr) then
+					return
+				end
+
+				vim.ui.select({
+					"1. Open Read-Only",
+					"2. Edit Anyway (Ignore Swap)",
+					"3. Quit Buffer",
+				}, {
+					prompt = string.format("File is actively open in another Neovim instance (PID: %d)", info.pid),
+				}, function(choice)
+					if not choice or choice:match("Read%-Only") then
+						vim.notify("Opened Read-Only. Another instance is editing this file.", vim.log.levels.WARN)
+					elseif choice:match("Edit Anyway") then
+						vim.bo[bufnr].readonly = false
+						vim.bo[bufnr].modifiable = true
+						vim.notify("Buffer is writable. Be careful not to overwrite the other instance!")
+					elseif choice:match("Quit") then
+						vim.cmd("bdelete! " .. bufnr)
+					end
+				end)
+			end)
+			-- Abort here! We DO NOT want to preview or delete an active swap file.
+			return
+		end
+	end
+
+	-- If process is dead (Stale Swap), proceed with Diff Preview
 	vim.schedule(function()
 		if not vim.api.nvim_buf_is_valid(bufnr) then
 			return
