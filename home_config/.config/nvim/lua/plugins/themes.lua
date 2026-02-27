@@ -73,6 +73,17 @@ return {
 				SnacksIndentScope = { fg = colors.lavender, bold = true },
 				SnacksIndentChunk = { fg = colors.lavender, bold = true },
 
+				-- Snacks Lazygit highlight groups
+				SnacksLazygitActiveBorder = { fg = colors.maroon, bold = true },
+				SnacksLazygitCherryPickedCommitBg = { fg = colors.surface1 },
+				SnacksLazygitCherryPickedCommitFg = { fg = colors.lavender },
+				SnacksLazygitDefaultFg = { fg = colors.text },
+				SnacksLazygitInactiveBorder = { fg = colors.overlay2 },
+				SnacksLazygitOptionsText = { fg = colors.blue },
+				SnacksLazygitSearchingActiveBorder = { fg = colors.yellow, bold = true },
+				SnacksLazygitSelectedLineBg = { bg = colors.surface0 },
+				SnacksLazygitUnstagedChanges = { fg = colors.red },
+
 				-- Ufo folding highlight groups
 				Folded = { fg = colors.surface1, bg = colors.mantle },
 				FoldColumn = { fg = colors.surface1, bg = colors.mantle },

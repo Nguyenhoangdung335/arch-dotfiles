@@ -1,5 +1,6 @@
 return {
 	"folke/snacks.nvim",
+	priority = 1000,
 	opts = {
 		input = {
 			enabled = true,
@@ -166,5 +167,29 @@ return {
 		},
 		image = { enabled = true },
 		quickfile = { enabled = true, exclude = { "latex" } },
+		lazygit = {
+			enabled = true,
+			theme = {
+				[241] = { fg = "SnacksLazygitInactiveBorder" },
+				activeBorderColor = { fg = "SnacksLazygitActiveBorder", bold = true },
+				cherryPickedCommitBgColor = { fg = "SnacksLazygitCherryPickedCommitBg" },
+				cherryPickedCommitFgColor = { fg = "SnacksLazygitCherryPickedCommitFg" },
+				defaultFgColor = { fg = "SnacksLazygitDefaultFg" },
+				inactiveBorderColor = { fg = "SnacksLazygitInactiveBorder" },
+				optionsTextColor = { fg = "SnacksLazygitOptionsText" },
+				searchingActiveBorderColor = { fg = "SnacksLazygitSearchingActiveBorder", bold = true },
+				selectedLineBgColor = { bg = "SnacksLazygitSelectedLineBg" },
+				unstagedChangesColor = { fg = "SnacksLazygitUnstagedChanges" },
+			},
+		},
+	},
+	keys = {
+		{
+			"<leader>lg",
+			function()
+				require("snacks").lazygit()
+			end,
+			desc = "LazyGit",
+		},
 	},
 }
