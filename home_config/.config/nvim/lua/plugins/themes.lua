@@ -59,20 +59,37 @@ return {
 			},
 		},
 		color_overrides = {},
-		custom_highlights = {},
+		custom_highlights = function(colors)
+			return {
+				SnacksIndent1 = { fg = colors.red },
+				SnacksIndent2 = { fg = colors.peach },
+				SnacksIndent3 = { fg = colors.yellow },
+				SnacksIndent4 = { fg = colors.green },
+				SnacksIndent5 = { fg = colors.sapphire },
+				SnacksIndent6 = { fg = colors.lavender },
+				SnacksIndent7 = { fg = colors.mauve },
+				SnacksIndent8 = { fg = colors.blue },
+				SnacksIndentScope = { fg = colors.lavender, bold = true },
+				SnacksIndentChunk = { fg = colors.lavender, bold = true },
+			}
+		end,
 		default_integrations = true,
 		auto_integrations = true,
-		-- integrations = {
-		--     cmp = true,
-		--     gitsigns = true,
-		--     treesitter = true,
-		--     nvimtree = false,
-		--     notify = false,
-		--     mini = {
-		--         enabled = true,
-		--         indentscope_color = "",
-		--     },
-		-- },
+		integrations = {
+			cmp = true,
+			gitsigns = true,
+			treesitter = true,
+			nvimtree = false,
+			notify = false,
+			-- mini = {
+			-- 	enabled = true,
+			-- 	indentscope_color = "",
+			-- },
+			snacks = {
+				enabled = true,
+				indent_scope_color = "",
+			},
+		},
 	},
 	config = function(_, opts)
 		require("catppuccin").setup(opts)

@@ -8,6 +8,8 @@ local language_servers = {
 	"ts_ls",
 	"rust_analyzer",
 	"qmlls",
+	"cssls",
+	"tailwindcss",
 }
 
 return {
@@ -221,6 +223,35 @@ return {
 						client.server_capabilities.documentRangeFormattingProvider = false
 					end,
 				},
+				cssls = {
+					filetypes = { "css", "scss", "less", "markdown" },
+				},
+				tailwindcss = {
+					filetypes = {
+						"aspnetcorerazor", "astro", "astro-markdown", "blade", "clojure", "django-html", "htmldjango",
+						"edge", "eelixir", "elixir", "ejs", "erb", "eruby", "gohtml", "gohtmltmpl", "haml", "handlebars",
+						"hbs", "html", "html-eex", "heex", "jade", "leaf", "liquid", "markdown", "mdx", "mustache",
+						"njk", "nunjucks", "php", "razor", "slim", "twig", "css", "less", "postcss", "sass", "scss",
+						"stylus", "sugarss", "javascript", "javascriptreact", "reason", "rescript", "typescript",
+						"typescriptreact", "vue", "svelte", "templ",
+					},
+					root_dir = function(fname)
+						local util = require("lspconfig.util")
+						return util.root_pattern(
+							"tailwind.config.js",
+							"tailwind.config.cjs",
+							"tailwind.config.mjs",
+							"tailwind.config.ts",
+							"postcss.config.js",
+							"postcss.config.cjs",
+							"postcss.config.mjs",
+							"postcss.config.ts",
+							"package.json",
+							"node_modules",
+							".git"
+						)(fname) or vim.fn.getcwd()
+					end,
+				},
 			}
 
 			-- Set global defaults for all servers
@@ -324,7 +355,8 @@ return {
 				Event = "󱐋", -- nf-cod-symbol_event
 				Operator = "󰆕", -- nf-cod-symbol_operator
 				TypeParameter = "󰊄", -- nf-cod-symbol_type_parameter
-				Supermaven = "",
+				Copilot = "", -- nf-cod-copilot
+				Supermaven = "", -- nf-cod-supermaven
 			},
 		},
 		config = function(_, opts)

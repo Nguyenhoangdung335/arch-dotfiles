@@ -71,10 +71,10 @@ return {
 			-- Optional: Customizing the window look
 			window = {
 				normal_hl = "Comment", -- Base highlight group in the notification window
-				winblend = 50, -- Background color opacity in the notification window
+				winblend = 30, -- Background color opacity in the notification window
 				border = "rounded", -- Border around the notification window
-				zindex = 45, -- Stacking priority of the notification window
-				max_width = 0, -- Maximum width of the notification window
+				zindex = 100, -- Stacking priority of the notification window
+				max_width = 50, -- Maximum width of the notification window
 				max_height = 0, -- Maximum height of the notification window
 				x_padding = 1, -- Padding from right edge of window boundary
 				y_padding = 0, -- Padding from bottom edge of window boundary

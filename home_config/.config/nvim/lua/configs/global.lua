@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-field
 -- ./lua/dung/global.lua
 vim.g.is_termux = vim.env.PREFIX and vim.env.PREFIX:match("com.termux") ~= nil
 

@@ -13,8 +13,6 @@ return {
 			"hrsh7th/cmp-cmdline",
 			"zbirenbaum/copilot-cmp",
 			"supermaven-inc/supermaven-nvim",
-			-- Optional: Add for Neovim Lua API completions if desired
-			-- "hrsh7th/cmp-nvim-lua",
 		},
 		config = function()
 			vim.api.nvim_set_hl(0, "CmpGhostText", { fg = "#808080" })
@@ -30,7 +28,6 @@ return {
 				},
 			})
 			local luasnip = require("luasnip")
-			local lspkind = require("lspkind")
 
 			-- Helper for Tab mappings (checks for words before cursor)
 			local has_words_before = function()
@@ -140,22 +137,25 @@ return {
 					-- keyword_pattern = [[\%(\S\+\)]],
 				},
 				formatting = {
-					format = lspkind.cmp_format({
-						mode = "symbol_text",
-						maxwidth = 50,
-						ellipsis_char = "...",
-						show_labelDetails = true,
-						symbol_map = {
-							-- Add symbols for AI sources
-							Copilot = "",
-							Supermaven = "",
-						},
-						before = function(entry, vim_item)
-							-- Add the source name to the completion menu
-							vim_item.menu = "[" .. entry.source.name .. "]"
-							return vim_item
-						end,
-					}),
+					format = function(entry, item)
+						local color_item = require("nvim-highlight-colors").format(entry, { kind = item.kind })
+						item = require("lspkind").cmp_format({
+							mode = "symbol_text",
+							maxwidth = 50,
+							ellipsis_char = "...",
+							show_labelDetails = true,
+							before = function(ent, vim_item)
+								-- Add the source name to the completion menu
+								vim_item.menu = "[" .. ent.source.name .. "]"
+								return vim_item
+							end,
+						})(entry, item)
+						if color_item.abbr_hl_group then
+							item.kind_hl_group = color_item.abbr_hl_group
+							item.kind = color_item.abbr
+						end
+						return item
+					end,
 				},
 			})
 

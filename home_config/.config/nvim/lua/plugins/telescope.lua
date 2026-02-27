@@ -130,7 +130,7 @@ return {
 					"--line-number",
 					"--column",
 					"--smart-case",
-					"--follow",
+					-- "--follow",
 				},
 				mappings = {
 					n = {
@@ -158,7 +158,11 @@ return {
 					vertical = { preview_height = 0.6 },
 				},
 			},
-			pickers = { find_files = { follow = true, hidden = true } },
+			pickers = {
+				find_files = { --[[ follow = true, ]]
+					hidden = true,
+				},
+			},
 			extensions = {
 				["ui-select"] = { require("telescope.themes").get_dropdown({}) },
 			},

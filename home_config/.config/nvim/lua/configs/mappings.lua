@@ -49,13 +49,59 @@ vim.keymap.set("i", "jk", "<Esc>")
 
 vim.keymap.set("n", "<leader>nh", ":nohlsearch<CR>", { desc = "No Highlight", silent = true })
 
-vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Scroll down and center" })
-vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Scroll up and center" })
-vim.keymap.set("n", "G", "Gzz", { desc = "Scroll to the bottom and center" })
-vim.keymap.set("n", "gg", "ggzz", { desc = "Scroll to the top and center" })
+local function smooth_center_scroll(key)
+	return function()
+		-- Save the user's current scrolloff
+		local current_scrolloff = vim.o.scrolloff
+
+		-- Temporarily set scrolloff to 999 to force centering
+		vim.o.scrolloff = 999
+
+		-- Capture any count passed before the key (e.g., 10G or 5<C-d>)
+		local count = vim.v.count > 0 and vim.v.count or ""
+		local keycode = vim.api.nvim_replace_termcodes(key, true, false, true)
+
+		-- Execute the native movement
+		vim.cmd("normal! " .. count .. keycode)
+
+		-- Restore the original scrolloff in the next execution tick
+		-- to allow `snacks.scroll` to grab the perfectly centered target view
+		vim.schedule(function()
+			vim.o.scrolloff = current_scrolloff
+		end)
+	end
+end
+
+-- Map your keys to use the new function
+vim.keymap.set(
+	"n",
+	"<C-d>",
+	smooth_center_scroll("<C-d>"),
+	{ noremap = true, desc = "Scroll down and center smoothly" }
+)
+vim.keymap.set("n", "<C-u>", smooth_center_scroll("<C-u>"), { noremap = true, desc = "Scroll up and center smoothly" })
+vim.keymap.set(
+	"n",
+	"G",
+	smooth_center_scroll("G"),
+	{ noremap = true, desc = "Scroll to the bottom and center smoothly" }
+)
+vim.keymap.set(
+	"n",
+	"gg",
+	smooth_center_scroll("gg"),
+	{ noremap = true, desc = "Scroll to the top and center smoothly" }
+)
 
 vim.keymap.set("n", "<CR>", "myo<Esc>'y", { desc = "Insert line below and return" })
--- vim.keymap.set("n", "<S-CR>", "myO<Esc>'y", { desc = "Insert line above and return" })
+vim.keymap.set("n", "<S-CR>", "myO<Esc>'y", { desc = "Insert line above and return" })
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "qf",
+	callback = function()
+		vim.keymap.del("n", "<CR>", { buffer = true })
+		vim.keymap.del("n", "<S-CR>", { buffer = true })
+	end,
+})
 
 vim.keymap.set("x", "<leader>p", '"_dP', { desc = "Paste without replacing the default register after cursor" })
 vim.keymap.set("x", "<leader>P", '"_dp', { desc = "Paste without replacing the default register before cursor" })
