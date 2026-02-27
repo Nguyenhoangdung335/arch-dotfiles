@@ -61,6 +61,7 @@ return {
 		color_overrides = {},
 		custom_highlights = function(colors)
 			return {
+				-- Snacks Indent highlight groups
 				SnacksIndent1 = { fg = colors.red },
 				SnacksIndent2 = { fg = colors.peach },
 				SnacksIndent3 = { fg = colors.yellow },
@@ -71,6 +72,15 @@ return {
 				SnacksIndent8 = { fg = colors.blue },
 				SnacksIndentScope = { fg = colors.lavender, bold = true },
 				SnacksIndentChunk = { fg = colors.lavender, bold = true },
+
+				-- Ufo folding highlight groups
+				Folded = { fg = colors.surface1, bg = colors.mantle },
+				FoldColumn = { fg = colors.surface1, bg = colors.mantle },
+				["@region.marker"] = { fg = colors.peach, bold = true, italic = true },
+				["@region.marker.folded"] = { fg = colors.peach, bg = colors.mantle, bold = true, italic = true },
+				UfoFoldedEllipsis = { fg = colors.lavender, bg = colors.mantle, bold = true },
+				UfoPreviewSbar = { bg = colors.crust },
+				UfoPreviewThumb = { bg = colors.surface2 },
 			}
 		end,
 		default_integrations = true,
