@@ -142,6 +142,7 @@ return {
 				return vim.g.snacks_indent ~= false and vim.b[buf].snacks_indent ~= false and vim.bo[buf].buftype == ""
 			end,
 		},
+		scope = { enabled = true },
 		animate = { enabled = true },
 		bigfile = {
 			enabled = true,
@@ -163,5 +164,7 @@ return {
 				end)
 			end,
 		},
+		image = { enabled = true },
+		quickfile = { enabled = true, exclude = { "latex" } },
 	},
 }
