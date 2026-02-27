@@ -1,6 +1,7 @@
 return {
 	"kdheepak/lazygit.nvim",
-	cond = not vim.g.vscode and not vim.g.is_termux,
+	-- cond = not vim.g.vscode and not vim.g.is_termux,
+	cond = false,
 	lazy = true,
 	cmd = {
 		"LazyGit",
@@ -18,4 +19,8 @@ return {
 	keys = {
 		{ "<leader>lg", "<cmd>LazyGit<cr>", desc = "LazyGit" },
 	},
+	config = function()
+		-- Prevent lazygit.nvim from overriding the default config with its own behavior
+		vim.g.lazygit_use_custom_config_file_path = 0
+	end,
 }
