@@ -1,2 +1,5 @@
 .qmlls.ini
 .github/
+home_config/.config/tmux/plugins/*
+home_config/.config/nvim/specs
+.git
