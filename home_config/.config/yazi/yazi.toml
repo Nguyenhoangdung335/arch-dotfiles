@@ -1,0 +1,55 @@
+[opener]
+# For terminal apps, use block = true
+edit = [
+    { run = 'nvim "$@"', block = true, desc = "Neovim" },
+]
+# For GUI apps, use orphan = true so they stay open after Yazi closes
+play = [
+    { run = 'mpv "$@"', orphan = true, desc = "MPV" },
+]
+# A generic system opener (uses your Arch associations)
+system = [
+    { run = 'xdg-open "$@"', desc = "System Default" },
+]
+# A custom app for dragging files
+drag = [
+    { run = 'ripdrag -x "$@"', orphan = true, desc = "Drag and Drop" },
+]
+# Office suite openers
+office = [
+    { run = 'desktopeditors "$@"', orphan = true, desc = "OnlyOffice" },
+    { run = 'libreoffice "$@"', orphan = true, desc = "LibreOffice" }
+]
+# Fast, minimalist viewing
+zathura = [
+    { run = 'zathura "$@"', orphan = true, desc = "Zathura (Fast)" }
+]
+# Academic/Technical reading
+sioyek = [
+    { run = 'sioyek "$@"', orphan = true, desc = "Sioyek (Research)" }
+]
+# Full editing/annotation
+okular = [
+    { run = 'okular "$@"', orphan = true, desc = "Okular (Annotate)" }
+]
+
+[open]
+prepend_rules = [
+    { name = "*.txt", use = ["edit", "system"] },
+    { name = "*.md", use = ["edit", "system"] },
+    { mime = "video/*", use = ["play", "system"] },
+    { mime = "image/*", use = ["system"] },
+    { mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document", use = ["office", "system"] },
+    { mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use = ["office", "system"] },
+    { mime = "application/vnd.openxmlformats-officedocument.presentationml.presentation", use = ["office", "system"] },
+    { mime = "application/vnd.openxmlformats-officedocument.*", use = ["office", "system"] },
+    { mime = "application/pdf", use = ["zathura", "sioyek", "okular", "office", "system"] },
+    # Fallback for all other files
+    { name = "*", use = ["system", "edit", "drag"] },
+]
+
+[plugin]
+prepend_previewers = [
+    { mime = "image/x-xcf", run = "magick" },
+    { name = "*.xcf", run = "magick" },
+]
