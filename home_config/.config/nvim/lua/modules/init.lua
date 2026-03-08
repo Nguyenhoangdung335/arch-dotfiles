@@ -1,1 +1,5 @@
 require("modules.swap_preview")
+require("modules.dap_go")
+require("modules.opencode_permission_notify")
+require("modules.ufo_utils")
+require("modules.codecompanion_ui")

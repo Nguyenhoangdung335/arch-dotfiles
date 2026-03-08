@@ -177,7 +177,7 @@ M.get_opts = function()
 			win_config = {
 				border = { "", "─", "", "", "", "─", "", "" },
 				winhighlight = "Normal:Folded",
-				winblend = 0,
+				winblend = vim.g.window_blend or 0,
 			},
 			mappings = {
 				scrollU = "<C-u>",
@@ -192,3 +192,4 @@ M.get_opts = function()
 end
 
 return M
+
