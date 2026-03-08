@@ -18,6 +18,26 @@ return {
 						repl = "r",
 						toggle = "t",
 					},
+					layouts = {
+						{
+							elements = {
+								{ id = "scopes", size = 0.25 },
+								{ id = "breakpoints", size = 0.25 },
+								{ id = "stacks", size = 0.25 },
+								{ id = "watches", size = 0.25 },
+							},
+							position = "left",
+							size = 40,
+						},
+						{
+							elements = {
+								{ id = "repl", size = 1.0 },
+								-- { id = "console", size = 0.5, },
+							},
+							position = "bottom",
+							size = 15,
+						},
+					},
 				},
 				config = function(_, opts)
 					local dap = require("dap")
@@ -102,13 +122,6 @@ return {
 					require("dap").terminate()
 				end,
 				desc = "DAP Terminate",
-			},
-			{
-				"<F9>",
-				function()
-					require("persistent-breakpoints.api").toggle_breakpoint()
-				end,
-				desc = "DAP Toggle Breakpoint",
 			},
 			{
 				"<F10>",
