@@ -9,6 +9,10 @@ return {
 			{ "<leader>wa", "<cmd>AutoSession toggle<CR>", desc = "Toggle autosave" },
 			{ "<leader>sf", "<cmd>AutoSession search<CR>", desc = "Session search" },
 		},
+		init = function()
+			-- 1. Add "globals" here so vim.g. variables are saved in the session file
+			vim.opt.sessionoptions:append("globals")
+		end,
 		opts = {
 			lazy_support = true,
 			auto_save = true,
@@ -18,10 +22,8 @@ return {
 			git_use_branch_name = true,
 			root_dir = vim.fn.stdpath("data") .. "/sessions/",
 
-			-- 1. Add "globals" here so vim.g. variables are saved in the session file
-			vim.opt.sessionoptions:append("globals"),
-
 			suppressed_dirs = { "~/", "/", "~/Downloads", "~/tmp" },
+			close_filetypes_on_save = { "help", "codecompanion" },
 
 			session_lens = {
 				buftypes_to_ignore = { "nofile", "quickfix" },

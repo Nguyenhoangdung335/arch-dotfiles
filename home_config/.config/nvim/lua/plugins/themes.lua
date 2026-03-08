@@ -92,6 +92,8 @@ return {
 				UfoFoldedEllipsis = { fg = colors.lavender, bg = colors.mantle, bold = true },
 				UfoPreviewSbar = { bg = colors.crust },
 				UfoPreviewThumb = { bg = colors.surface2 },
+
+				-- CodeCompanion highlight groups overrides are now handled by codecompanion_ui module
 			}
 		end,
 		default_integrations = true,
@@ -110,6 +112,8 @@ return {
 				enabled = true,
 				indent_scope_color = "",
 			},
+			render_markdown = true,
+			markview = true,
 		},
 	},
 	config = function(_, opts)

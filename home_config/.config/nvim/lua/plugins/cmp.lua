@@ -1,3 +1,20 @@
+local function apply_cmp_highlights()
+	local cat_ok, cat_palettes = pcall(require, "catppuccin.palettes")
+	if cat_ok then
+		local flavor = require("catppuccin").flavour or "mocha"
+		local colors = cat_palettes.get_palette(flavor)
+		if colors then
+			vim.api.nvim_set_hl(0, "CmpGhostText", { fg = colors.surface1, bold = true })
+			vim.api.nvim_set_hl(0, "CmpItemKindCopilot", { fg = colors.mauve, bold = true })
+			vim.api.nvim_set_hl(0, "CmpItemKindSupermaven", { fg = colors.peach, italic = true })
+		end
+	else
+		vim.api.nvim_set_hl(0, "CmpGhostText", { fg = "#808080" })
+		vim.api.nvim_set_hl(0, "CmpItemKindCopilot", { fg = "#6CC644" })
+		vim.api.nvim_set_hl(0, "CmpItemKindSupermaven", { fg = "#6CC644" })
+	end
+end
+
 return {
 	{
 		"hrsh7th/nvim-cmp",
@@ -14,19 +31,8 @@ return {
 			"zbirenbaum/copilot-cmp",
 			"supermaven-inc/supermaven-nvim",
 		},
-		config = function()
-			vim.api.nvim_set_hl(0, "CmpGhostText", { fg = "#808080" })
-			-- Add highlights for AI sources (from copilot-cmp and supermaven docs)
-			vim.api.nvim_set_hl(0, "CmpItemKindCopilot", { fg = "#6CC644" })
-			vim.api.nvim_set_hl(0, "CmpItemKindSupermaven", { fg = "#6CC644" })
-
+		opts = function()
 			local cmp = require("cmp")
-			require("luasnip.loaders.from_vscode").lazy_load()
-			require("luasnip.loaders.from_vscode").lazy_load({
-				paths = {
-					vim.fn.stdpath("config") .. "/snippets/vscode-kubernetes-tools/snippets",
-				},
-			})
 			local luasnip = require("luasnip")
 
 			-- Helper for Tab mappings (checks for words before cursor)
@@ -38,7 +44,8 @@ return {
 			end
 
 			local cmp_select = { behavior = cmp.SelectBehavior.Select }
-			cmp.setup({
+
+			return {
 				experimental = {
 					ghost_text = true,
 					native_menu = false,
@@ -47,6 +54,9 @@ return {
 					expand = function(args)
 						luasnip.lsp_expand(args.body)
 					end,
+				},
+				view = {
+					entries = { name = "custom", selection_order = "top_down" },
 				},
 				window = {
 					completion = cmp.config.window.bordered({
@@ -63,19 +73,15 @@ return {
 					["<C-u>"] = cmp.mapping.scroll_docs(4),
 					["<C-p>"] = cmp.mapping.select_prev_item(cmp_select),
 					["<C-n>"] = cmp.mapping.select_next_item(cmp_select),
-					-- Add standard trigger for completion
 					["<C-Space>"] = cmp.mapping.complete(),
-					-- -- Alternative for Ctrl + .
-					-- ["<CSI>46;5u"] = cmp.mapping.complete(),
 					["<C-e>"] = cmp.mapping.abort(),
 					["<C-CR>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
 							cmp.confirm({ select = true })
 						else
-							fallback() -- fall back to normal behavior (insert newline)
+							fallback()
 						end
 					end, { "i", "s" }),
-					-- Add Super-Tab like mapping for next item or snippet jump
 					["<Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() and has_words_before() then
 							cmp.select_next_item(cmp_select)
@@ -85,7 +91,6 @@ return {
 							fallback()
 						end
 					end, { "i", "s" }),
-					-- Add for previous item or snippet jump back
 					["<S-Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
 							cmp.select_prev_item(cmp_select)
@@ -103,15 +108,11 @@ return {
 					{ name = "supermaven", priority = 700 },
 					{ name = "buffer", priority = 500 },
 					{ name = "path", priority = 400 },
-					-- Optional: For Lua files
-					-- { name = "nvim_lua", priority = 800 },
 				}),
 				sorting = {
 					priority_weight = 2,
 					comparators = {
-						-- Add copilot prioritize comparator
 						require("copilot_cmp.comparators").prioritize,
-						-- Fixed custom comparator using .option.priority
 						function(entry1, entry2)
 							local priority1 = entry1.source.priority or 0
 							local priority2 = entry2.source.priority or 0
@@ -123,7 +124,6 @@ return {
 						cmp.config.compare.offset,
 						cmp.config.compare.exact,
 						cmp.config.compare.score,
-						-- cmp.config.compare.recently_used,
 						cmp.config.compare.source,
 						cmp.config.compare.locality,
 						cmp.config.compare.kind,
@@ -134,7 +134,6 @@ return {
 				},
 				completion = {
 					completeopt = "menu,menuone,noinsert",
-					-- keyword_pattern = [[\%(\S\+\)]],
 				},
 				formatting = {
 					format = function(entry, item)
@@ -145,7 +144,6 @@ return {
 							ellipsis_char = "...",
 							show_labelDetails = true,
 							before = function(ent, vim_item)
-								-- Add the source name to the completion menu
 								vim_item.menu = "[" .. ent.source.name .. "]"
 								return vim_item
 							end,
@@ -157,7 +155,20 @@ return {
 						return item
 					end,
 				},
+			}
+		end,
+		config = function(_, opts)
+			apply_cmp_highlights()
+
+			local cmp = require("cmp")
+			require("luasnip.loaders.from_vscode").lazy_load()
+			require("luasnip.loaders.from_vscode").lazy_load({
+				paths = {
+					vim.fn.stdpath("config") .. "/snippets/vscode-kubernetes-tools/snippets",
+				},
 			})
+
+			cmp.setup(opts)
 
 			-- Use buffer sources for '/' and '?' commands
 			cmp.setup.cmdline({ "/", "?" }, {

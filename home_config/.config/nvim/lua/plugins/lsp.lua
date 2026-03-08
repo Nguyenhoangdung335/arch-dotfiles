@@ -1,17 +1,3 @@
-local language_servers = {
-	"yamlls",
-	"docker_compose_language_service",
-	"helm_ls",
-	"lua_ls",
-	"dockerls",
-	"gopls",
-	"ts_ls",
-	"rust_analyzer",
-	"qmlls",
-	"cssls",
-	"tailwindcss",
-}
-
 return {
 	{
 		"neovim/nvim-lspconfig",
@@ -20,47 +6,8 @@ return {
 			"mason-org/mason-lspconfig.nvim",
 			"nvimdev/lspsaga.nvim",
 		},
-		config = function()
-			local cmp_nvim_lsp = require("cmp_nvim_lsp")
-			local capabilities = vim.tbl_deep_extend(
-				"force",
-				{},
-				vim.lsp.protocol.make_client_capabilities(),
-				cmp_nvim_lsp.default_capabilities()
-			)
-
-			local on_attach = function(_, bufnr)
-				-- local saga = require("lspsaga")
-				local opts = { noremap = true, silent = true, buffer = bufnr }
-
-				-- LSP Saga Keymaps
-				vim.keymap.set("n", "K", "<cmd>Lspsaga hover_doc<cr>", opts)
-				vim.keymap.set("n", "gd", "<cmd>Lspsaga peek_definition<cr>", opts)
-				vim.keymap.set("n", "gD", "<cmd>Lspsaga goto_definition<cr>", opts)
-				-- vim.keymap.set("n", "GD", "<cmd>b#", opts)
-				vim.keymap.set("n", "gr", "<cmd>Lspsaga finder<cr>", opts)
-				vim.keymap.set("n", "gi", "<cmd>Lspsaga goto_implementation<cr>", opts)
-				vim.keymap.set("n", "<leader>rn", "<cmd>Lspsaga rename<cr>", opts)
-				vim.keymap.set({ "n", "v" }, "<leader>ca", "<cmd>Lspsaga code_action<cr>", opts)
-				vim.keymap.set("n", "<leader>lC", "<cmd>Lspsaga incoming_calls<cr>", opts)
-				vim.keymap.set("n", "<leader>lc", "<cmd>Lspsaga outgoing_calls<cr>", opts)
-
-				-- Diagnostics Keymaps (using saga)
-				-- vim.keymap.set("n", "gl", "<cmd>Lspsaga show_line_diagnostics<cr>", opts)
-				vim.keymap.set("n", "[d", "<cmd>Lspsaga diagnostic_jump_prev<cr>", opts)
-				vim.keymap.set("n", "]d", "<cmd>Lspsaga diagnostic_jump_next<cr>", opts)
-
-				-- You can still keep your Trouble keymap for project-wide diagnostics
-				vim.keymap.set(
-					"n",
-					"<leader>xx",
-					"<cmd>Trouble diagnostics toggle<cr>",
-					{ desc = "Project Diagnostics (Trouble)" }
-				)
-			end
-
-			local servers = language_servers
-			local servers_config = {
+		opts = {
+			servers = {
 				yamlls = {
 					settings = {
 						yaml = {
@@ -86,6 +33,8 @@ return {
 						},
 					},
 				},
+				docker_compose_language_service = {},
+				helm_ls = {},
 				lua_ls = {
 					settings = {
 						Lua = {
@@ -105,6 +54,7 @@ return {
 						},
 					},
 				},
+				dockerls = {},
 				gopls = {
 					root_markers = { ".git", "go.mod", "go.sum" },
 					root_dir = function(bufnr, on_dir)
@@ -146,6 +96,7 @@ return {
 						},
 					},
 				},
+				ts_ls = {},
 				rust_analyzer = {
 					settings = {
 						["rust-analyzer"] = {
@@ -161,14 +112,6 @@ return {
 								command = "clippy",
 								extraArgs = { "--no-deps" },
 								features = "all",
-							},
-							procMacro = {
-								enable = true,
-								ignored = {
-									["async-trait"] = { "async_trait" },
-									["napi-derive"] = { "napi" },
-									["async-recursion"] = { "async_recursion" },
-								},
 							},
 							inlayHints = {
 								bindingModeHints = {
@@ -217,27 +160,70 @@ return {
 						"-I",
 						"/usr/lib/qt/qml",
 					},
-					root_markers = { ".git", "qmldir", ".qmlls.ini" },
+					root_markers = { ".qmlls.ini", "qmldir", ".git" },
 					on_attach = function(client)
 						client.server_capabilities.documentFormattingProvider = false
 						client.server_capabilities.documentRangeFormattingProvider = false
 					end,
+					filetypes = { "qml", "qmljs" },
 				},
 				cssls = {
 					filetypes = { "css", "scss", "less", "markdown" },
 				},
 				tailwindcss = {
 					filetypes = {
-						"aspnetcorerazor", "astro", "astro-markdown", "blade", "clojure", "django-html", "htmldjango",
-						"edge", "eelixir", "elixir", "ejs", "erb", "eruby", "gohtml", "gohtmltmpl", "haml", "handlebars",
-						"hbs", "html", "html-eex", "heex", "jade", "leaf", "liquid", "markdown", "mdx", "mustache",
-						"njk", "nunjucks", "php", "razor", "slim", "twig", "css", "less", "postcss", "sass", "scss",
-						"stylus", "sugarss", "javascript", "javascriptreact", "reason", "rescript", "typescript",
-						"typescriptreact", "vue", "svelte", "templ",
+						"aspnetcorerazor",
+						"astro",
+						"astro-markdown",
+						"blade",
+						"clojure",
+						"django-html",
+						"htmldjango",
+						"edge",
+						"eelixir",
+						"elixir",
+						"ejs",
+						"erb",
+						"eruby",
+						"gohtml",
+						"gohtmltmpl",
+						"haml",
+						"handlebars",
+						"hbs",
+						"html",
+						"html-eex",
+						"heex",
+						"jade",
+						"leaf",
+						"liquid",
+						"markdown",
+						"mdx",
+						"mustache",
+						"njk",
+						"nunjucks",
+						"php",
+						"razor",
+						"slim",
+						"twig",
+						"css",
+						"less",
+						"postcss",
+						"sass",
+						"scss",
+						"stylus",
+						"sugarss",
+						"templ",
+						"javascript",
+						"javascriptreact",
+						"reason",
+						"rescript",
+						"typescript",
+						"typescriptreact",
+						"vue",
+						"svelte",
 					},
 					root_dir = function(fname)
-						local util = require("lspconfig.util")
-						return util.root_pattern(
+						return require("lspconfig.util").root_pattern(
 							"tailwind.config.js",
 							"tailwind.config.cjs",
 							"tailwind.config.mjs",
@@ -252,7 +238,66 @@ return {
 						)(fname) or vim.fn.getcwd()
 					end,
 				},
-			}
+				copilot = {},
+			},
+		},
+		config = function(_, opts)
+			local cmp_nvim_lsp = require("cmp_nvim_lsp")
+			local capabilities = vim.tbl_deep_extend(
+				"force",
+				{},
+				vim.lsp.protocol.make_client_capabilities(),
+				cmp_nvim_lsp.default_capabilities()
+			)
+
+			local on_attach = function(_, bufnr)
+				local buf_opts = { noremap = true, silent = true, buffer = bufnr }
+
+				-- LSP Saga Keymaps
+				vim.keymap.set("n", "K", function()
+					for _, win in ipairs(vim.api.nvim_list_wins()) do
+						local config = vim.api.nvim_win_get_config(win)
+
+						if config.relative ~= "" then
+							local buf = vim.api.nvim_win_get_buf(win)
+							local ft = vim.bo[buf].filetype
+
+							if ft == "lspsaga_hover" then
+								vim.api.nvim_set_current_win(win)
+								return
+							end
+						end
+					end
+
+					vim.cmd("Lspsaga hover_doc")
+				end, buf_opts)
+				vim.keymap.set("n", "gd", "<cmd>Lspsaga peek_definition<cr>", buf_opts)
+				vim.keymap.set("n", "gD", "<cmd>Lspsaga goto_definition<cr>", buf_opts)
+				vim.keymap.set("n", "gr", "<cmd>Lspsaga finder<cr>", buf_opts)
+				vim.keymap.set("n", "gi", "<cmd>Lspsaga goto_implementation<cr>", buf_opts)
+				vim.keymap.set("n", "<leader>rn", "<cmd>Lspsaga rename<cr>", buf_opts)
+				vim.keymap.set({ "n", "v" }, "<leader>ca", "<cmd>Lspsaga code_action<cr>", buf_opts)
+				vim.keymap.set("n", "<leader>lC", "<cmd>Lspsaga incoming_calls<cr>", buf_opts)
+				vim.keymap.set("n", "<leader>lc", "<cmd>Lspsaga outgoing_calls<cr>", buf_opts)
+
+				-- Diagnostics Keymaps (using saga)
+				vim.keymap.set("n", "[d", "<cmd>Lspsaga diagnostic_jump_prev<cr>", buf_opts)
+				vim.keymap.set("n", "]d", "<cmd>Lspsaga diagnostic_jump_next<cr>", buf_opts)
+
+				-- Project Diagnostics (Trouble)
+				vim.keymap.set(
+					"n",
+					"<leader>xx",
+					"<cmd>Trouble diagnostics toggle<cr>",
+					{ desc = "Project Diagnostics (Trouble)" }
+				)
+			end
+
+			-- Configure mason-lspconfig
+			require("mason-lspconfig").setup({
+				ensure_installed = vim.g.is_termux and {} or vim.tbl_keys(opts.servers),
+				automatic_enable = false,
+			})
 
 			-- Set global defaults for all servers
 			vim.lsp.config("*", {
@@ -260,14 +305,22 @@ return {
 				on_attach = on_attach,
 			})
 
-			for _, server in ipairs(servers) do
-				local conf = servers_config[server] or {}
+			for server, conf in pairs(opts.servers) do
 				conf.capabilities = capabilities
-				conf.on_attach = on_attach
+				-- We merge the default on_attach with any server-specific on_attach
+				local server_on_attach = conf.on_attach
+				conf.on_attach = function(client, bufnr)
+					on_attach(client, bufnr)
+					if server_on_attach then
+						server_on_attach(client, bufnr)
+					end
+				end
+
 				vim.lsp.config(server, conf)
 				vim.lsp.enable(server)
-				vim.lsp.set_log_level("ERROR")
 			end
+
+			vim.lsp.set_log_level("ERROR")
 		end,
 	},
 	{
@@ -286,10 +339,7 @@ return {
 	{
 		"mason-org/mason-lspconfig.nvim",
 		dependencies = { "mason-org/mason.nvim" },
-		opts = {
-			ensure_installed = vim.g.is_termux and {} or language_servers,
-			automatic_enable = false,
-		},
+		-- configuration is done in nvim-lspconfig
 	},
 	{
 		"nvimdev/lspsaga.nvim",
@@ -330,33 +380,33 @@ return {
 			mode = "symbol_text",
 			preset = "codicons", -- use Codicons instead of old MDI glyphs
 			symbol_map = {
-				Text = "󰉿", -- nf-cod-symbol_string
-				Method = "󰆧", -- nf-cod-symbol_method
-				Function = "󰊕", -- nf-cod-symbol_function
-				Constructor = "󰒓", -- nf-cod-symbol_constructor
-				Field = "󰜢", -- nf-cod-symbol_field
-				Variable = "󰀫", -- nf-cod-symbol_variable
-				Class = "󰠱", -- nf-cod-symbol_class
-				Interface = "󰜰", -- nf-cod-symbol_interface
-				Module = "󰕳", -- nf-cod-symbol_namespace
-				Property = "󰜢", -- nf-cod-symbol_property
-				Unit = "󰑭", -- nf-cod-symbol_unit
-				Value = "󰎠", -- nf-cod-symbol_numeric
-				Enum = "󰕘", -- nf-cod-symbol_enum
-				Keyword = "󰌋", -- nf-cod-symbol_keyword
-				Snippet = "󰘌", -- nf-cod-symbol_snippet
-				Color = "󰏘", -- nf-cod-symbol_color
-				File = "󰈔", -- nf-cod-symbol_file
-				Reference = "󰈇", -- nf-cod-references
-				Folder = "󰉋", -- nf-cod-folder
-				EnumMember = "󰕘", -- nf-cod-symbol_enum_member
-				Constant = "󰏿", -- nf-cod-symbol_constant
-				Struct = "󰙅", -- nf-cod-symbol_structure
-				Event = "󱐋", -- nf-cod-symbol_event
-				Operator = "󰆕", -- nf-cod-symbol_operator
-				TypeParameter = "󰊄", -- nf-cod-symbol_type_parameter
-				Copilot = "", -- nf-cod-copilot
-				Supermaven = "", -- nf-cod-supermaven
+				Text = "󰉿",
+				Method = "󰆧",
+				Function = "󰊕",
+				Constructor = "󰒓",
+				Field = "󰜢",
+				Variable = "󰀫",
+				Class = "󰠱",
+				Interface = "󰜰",
+				Module = "󰕳",
+				Property = "󰜢",
+				Unit = "󰑭",
+				Value = "󰎠",
+				Enum = "󰕘",
+				Keyword = "󰌋",
+				Snippet = "󰘌",
+				Color = "󰏘",
+				File = "󰈔",
+				Reference = "󰈇",
+				Folder = "󰉋",
+				EnumMember = "󰕘",
+				Constant = "󰏿",
+				Struct = "󰙅",
+				Event = "󱐋",
+				Operator = "󰆕",
+				TypeParameter = "󰊄",
+				Copilot = "",
+				Supermaven = "",
 			},
 		},
 		config = function(_, opts)

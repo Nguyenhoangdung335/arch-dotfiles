@@ -6,15 +6,13 @@ return {
 			"nvim-treesitter/nvim-treesitter",
 			{
 				"windwp/nvim-ts-autotag",
-				config = function()
-					require("nvim-ts-autotag").setup({
-						opts = {
-							enable_close = true,
-							enable_rename = true,
-							enable_close_on_slash = false,
-						},
-					})
-				end,
+				opts = {
+					opts = {
+						enable_close = true,
+						enable_rename = true,
+						enable_close_on_slash = false,
+					},
+				},
 			},
 		},
 		config = function()
@@ -24,7 +22,7 @@ return {
 
 			npairs.setup({
 				disable_filetype = { "text" },
-				ignored_next_char = "[%w%(%[%{]",
+				ignored_next_char = "[%w%(%[%{%<]",
 				map_cr = true,
 				map_c_w = false, -- False due to conflict with telescope picker prompt
 				check_ts = true,
@@ -47,7 +45,7 @@ return {
 
 			-- Add rule for html tag to auto indent on Enter and auto space on space in between tags
 			npairs.add_rules({
-				Rule(" ", " ")
+				Rule(" ", " ", { "html", "xml", "javascript", "javascriptreact", "typescript", "typescriptreact" })
 					:with_pair(function(opts)
 						local pair = opts.line:sub(opts.col - 1, opts.col)
 						return vim.tbl_contains({ "()", "[]", "{}", "><" }, pair)
@@ -70,6 +68,20 @@ return {
 			-- Add code block rule "```" for markdown file
 			npairs.add_rules({
 				Rule("```", "```", { "markdown", "rmd", "md" }):with_move(cond.none()):with_cr(cond.after_regex("```")), -- Only expand if '```' is after the cursor
+			})
+
+			-- Generic <> pair (exclude markup/tag filetypes)
+			npairs.add_rules({
+				Rule("<", ">"):with_pair(cond.not_filetypes({
+					"html",
+					"xml",
+					"javascript",
+					"javascriptreact",
+					"typescript",
+					"typescriptreact",
+					"jsx",
+					"tsx",
+				})),
 			})
 		end,
 	},

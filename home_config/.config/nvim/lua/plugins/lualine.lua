@@ -10,9 +10,8 @@ return {
 	"nvim-lualine/lualine.nvim",
 	dependencies = { "nvim-tree/nvim-web-devicons" },
 	cond = not vim.g.vscode,
-	config = function()
-		require("lualine").setup({
-			options = {
+	opts = {
+		options = {
 				icons_enabled = true,
 				theme = "palenight",
 				component_separators = { left = "", right = "" },
@@ -71,8 +70,7 @@ return {
 			},
 			tabline = {},
 			winbar = {},
-			inactive_winbar = {},
-			extensions = {},
-		})
-	end,
+		inactive_winbar = {},
+		extensions = {},
+	},
 }

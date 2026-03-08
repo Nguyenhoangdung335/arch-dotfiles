@@ -80,7 +80,7 @@ return {
 			{
 				"Weissle/persistent-breakpoints.nvim",
 				opts = {
-					load_breakpoints_event = { "BufReadPost" },
+					load_breakpoints_event = { "BufReadPost", "BufNewFile" },
 					always_reload = true,
 				},
 				config = function(_, opts)

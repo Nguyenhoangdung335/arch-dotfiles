@@ -9,6 +9,8 @@ return {
 			typescriptreact = { "eslint_d" },
 			proto = { "buf" },
 			dockerfile = { "trivy" },
+			-- qmljs = { "qmllint" },
+			-- qml = { "qmllint" },
 		},
 	},
 	config = function(_, opts)

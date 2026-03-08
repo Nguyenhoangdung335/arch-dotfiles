@@ -71,7 +71,7 @@ return {
 			-- Optional: Customizing the window look
 			window = {
 				normal_hl = "Comment", -- Base highlight group in the notification window
-				winblend = 30, -- Background color opacity in the notification window
+				winblend = vim.g.window_blend or 30, -- Background color opacity in the notification window
 				border = "rounded", -- Border around the notification window
 				zindex = 100, -- Stacking priority of the notification window
 				max_width = 50, -- Maximum width of the notification window

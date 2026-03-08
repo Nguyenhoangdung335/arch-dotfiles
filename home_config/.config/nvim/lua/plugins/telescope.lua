@@ -142,14 +142,6 @@ return {
 						["<M-p>"] = require("telescope.actions.layout").toggle_preview,
 						["<Esc>"] = require("telescope.actions").close,
 						["<Tab>"] = focus_preview,
-						-- ["<C-w>"] = function()
-						-- 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-w>", true, false, true), "n", true)
-						-- end,
-
-						-- -- Similarly for <C-u> to ensure it's clean:
-						-- ["<C-u>"] = function()
-						-- 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-u>", true, false, true), "n", true)
-						-- end,
 					},
 				},
 				layout_strategy = "horizontal", -- important
@@ -169,21 +161,18 @@ return {
 		},
 		config = function(_, opts)
 			local telescope = require("telescope")
+			telescope.setup(opts)
+
 			local has_fidget = pcall(require, "fidget")
-			local has_ui_select = pcall(require, "telescope-ui-select")
 			local has_harpoon = pcall(require, "harpoon")
 
 			if has_fidget then
 				telescope.load_extension("fidget")
 			end
-			if has_ui_select then
-				telescope.load_extension("ui-select")
-			end
+			telescope.load_extension("ui-select")
 			if has_harpoon then
 				telescope.load_extension("harpoon")
 			end
-			telescope.setup(opts)
-			-- local trouble_telescope = require("trouble.sources.telescope")
 		end,
 	},
 }

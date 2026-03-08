@@ -11,7 +11,7 @@ return {
 			win = {
 				relative = "cursor",
 				border = "rounded",
-				blend = 10, -- Reduces opacity of input background (0 is opaque, 100 transparent)
+				blend = vim.g.window_blend or 10, -- Reduces opacity of input background (0 is opaque, 100 transparent)
 			},
 		},
 		picker = {
@@ -23,10 +23,10 @@ return {
 						["<Esc>"] = { "close", mode = { "n", "i" } },
 						["<C-q>"] = { "close", mode = { "n", "i" } },
 					},
-					blend = 20, -- Reduces opacity of picker input background
+					blend = vim.g.window_blend or 20, -- Reduces opacity of picker input background
 				},
 				list = {
-					blend = 20, -- Also apply blend to the choices list
+					blend = vim.g.window_blend or 20, -- Also apply blend to the choices list
 				},
 			},
 			sources = {
@@ -36,12 +36,12 @@ return {
 						relative = "editor",
 						-- Override the layout to use border for the list
 						layout = {
-							backdrop = false,
+							backdrop = true,
 							row = 1,
 							width = 0.4,
 							min_width = 80,
 							height = 0.4,
-							blend = 20,
+							blend = vim.g.window_blend or 20,
 							border = "none",
 							box = "vertical",
 							{
@@ -52,7 +52,7 @@ return {
 								title_pos = "center",
 							},
 							{ win = "list", border = "rounded" },
-							{ win = "preview", title = "{preview}", border = "rounded" },
+							-- { win = "preview", title = "{preview}", border = "rounded" },
 						},
 					},
 				},
@@ -84,7 +84,7 @@ return {
 		scroll = {
 			enabled = true,
 			animate = {
-				duration = { step = 10, total = 80 },
+				duration = { step = 50, total = 50 },
 				easing = "linear",
 			},
 			-- faster animation when repeating scroll after delay
@@ -98,6 +98,9 @@ return {
 				return vim.g.snacks_scroll ~= false
 					and vim.b[buf].snacks_scroll ~= false
 					and vim.bo[buf].buftype ~= "terminal"
+					and vim.bo[buf].filetype ~= "codecompanion"
+					and vim.bo[buf].filetype ~= "markdown"
+					and vim.bo[buf].filetype ~= "Avante"
 			end,
 		},
 		indent = {

@@ -1,7 +1,24 @@
+local function hook_notify(msg, level, opts, is_system_notify, is_neovim_notify)
+	local global = require("configs.global")
+	if not global.is_neovim_focused() and is_neovim_notify then
+		vim.notify(msg, level, opts)
+	end
+	if is_system_notify then
+		global.system_notify("Opencode", msg, level)
+	end
+end
+
 return {
 	{
 		"sudo-tee/opencode.nvim",
 		cond = not vim.g.vscode and not vim.g.is_termux,
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"MeanderingProgrammer/render-markdown.nvim",
+			"hrsh7th/nvim-cmp",
+			"nvim-telescope/telescope.nvim",
+			"folke/snacks.nvim",
+		},
 		config = function()
 			-- Default configuration with all available options
 			require("opencode").setup({
@@ -129,7 +146,7 @@ return {
 					completion = {
 						file_sources = {
 							enabled = true,
-							preferred_cli_tool = "server", -- 'fd','fdfind','rg','git','server' if nil, it will use the best available tool, 'server' uses opencode cli to get file list (works cross platform) and supports folders
+							preferred_cli_tool = "rg", -- 'fd','fdfind','rg','git','server' if nil, it will use the best available tool, 'server' uses opencode cli to get file list (works cross platform) and supports folders
 							ignore_patterns = {
 								"^%.git/",
 								"^%.svn/",
@@ -204,10 +221,42 @@ return {
 
 				-- User Hooks for custom behavior at certain events
 				hooks = {
-					on_file_edited = nil, -- Called after a file is edited by opencode.
-					on_session_loaded = nil, -- Called after a session is loaded.
-					on_done_thinking = nil, -- Called when opencode finishes thinking (all jobs complete).
-					on_permission_requested = nil, -- Called when a permission request is issued.
+					on_file_edited = function(file_path, edit_type)
+						hook_notify(
+							"File edited: " .. file_path .. " (" .. edit_type .. ")",
+							vim.log.levels.INFO,
+							{ title = "Opencode" },
+							false,
+							true
+						)
+					end,
+					on_session_loaded = function(session_name)
+						hook_notify(
+							"Session loaded: " .. session_name,
+							vim.log.levels.INFO,
+							{ title = "Opencode" },
+							false,
+							true
+						)
+					end, -- Called after a session is loaded.
+					on_done_thinking = function()
+						hook_notify(
+							"Opencode has finished thinking.",
+							vim.log.levels.INFO,
+							{ title = "Opencode" },
+							false,
+							true
+						)
+					end, -- Called when opencode finishes thinking (all jobs complete).
+					on_permission_requested = function()
+						hook_notify(
+							"Opencode is requesting permission.",
+							vim.log.levels.WARN,
+							{ title = "Opencode" },
+							false,
+							true
+						)
+					end, -- Called when a permission request is issued.
 				},
 				quick_chat = {
 					default_model = "opencode/big-pickle", -- works better with a fast model like gpt-4.1
@@ -216,19 +265,5 @@ return {
 				},
 			})
 		end,
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-			{
-				"MeanderingProgrammer/render-markdown.nvim",
-				opts = {
-					anti_conceal = { enabled = false },
-					file_types = { "markdown", "opencode_output" },
-				},
-				ft = { "markdown", "Avante", "copilot-chat", "opencode_output" },
-			},
-			"hrsh7th/nvim-cmp",
-			"nvim-telescope/telescope.nvim",
-			"folke/snacks.nvim",
-		},
 	},
 }
