@@ -1,41 +1,87 @@
--- Set line number and relative numbering
-vim.opt.nu = true
-vim.opt.relativenumber = true
--- Hightlight current line
-vim.opt.cursorline = true
+-- ===========================
+-- UI: Line Numbers & Cursor
+-- ===========================
+vim.opt.nu = true -- Show absolute line numbers
+vim.opt.relativenumber = true -- Show relative line numbers
+vim.opt.cursorline = true -- Highlight current line
+
 vim.cmd([[
   highlight CursorLineNr guibg=NONE guifg=#88C0D0
   highlight CursorLine guibg=#17191f gui=NONE
 ]])
 
--- Set Tab Number
-vim.opt.tabstop = 4
-vim.opt.softtabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.expandtab = true
+-- ===========================
+-- Tabs & Indentation
+-- ===========================
+vim.opt.tabstop = 4 -- Number of spaces per tab
+vim.opt.softtabstop = 4 -- Number of spaces for editing operations
+vim.opt.shiftwidth = 4 -- Number of spaces for autoindent
+vim.opt.expandtab = true -- Convert tabs to spaces
+vim.opt.smartindent = true -- Smart autoindenting
 
-vim.opt.clipboard = "unnamedplus"
+-- ===========================
+-- Clipboard
+-- ===========================
+vim.opt.clipboard = "unnamedplus" -- Use system clipboard
 
-vim.opt.smartindent = true
+-- ===========================
+-- Display & Colors
+-- ===========================
+vim.opt.termguicolors = true -- Enable 24-bit RGB colors
+vim.opt.wrap = false -- Disable line wrap
+vim.opt.colorcolumn = "120" -- Highlight column 120
 
-vim.opt.wrap = false
+-- ===========================
+-- Scrolling & Sign Column
+-- ===========================
+vim.opt.scrolloff = 15 -- Minimum lines above/below cursor
+-- vim.opt.scrolloff = 999         -- Uncomment for centered cursor
+vim.opt.signcolumn = "yes" -- Always show sign column
 
-vim.opt.termguicolors = true
+-- ===========================
+-- Filename Characters
+-- ===========================
+vim.opt.isfname:append("@-@") -- Allow @ in file names
 
-vim.opt.scrolloff = 15
--- vim.opt.scrolloff = 999
-vim.opt.signcolumn = "yes"
-vim.opt.isfname:append("@-@")
+-- ===========================
+-- Performance
+-- ===========================
+vim.opt.updatetime = 50 -- Faster completion
+-- vim.opt.pumheight = 10 -- Maximum number of items to show in the popup menu
 
-vim.opt.updatetime = 50
+-- ===========================
+-- Mode Display
+-- ===========================
+vim.opt.showmode = true -- Show mode in command line
 
-vim.opt.colorcolumn = "120"
-
-vim.opt.showmode = true
-
+-- ===========================
+-- Undo History
+-- ===========================
 local undodir = vim.fn.stdpath("data") .. "/undodir"
 if vim.fn.isdirectory(undodir) == 0 then
 	vim.fn.mkdir(undodir, "p")
 end
-vim.opt.undodir = undodir
-vim.opt.undofile = true
+vim.opt.undodir = undodir -- Set undo directory
+vim.opt.undofile = true -- Enable persistent undo
+
+-- ===========================
+-- Custom File Type
+-- ===========================
+vim.filetype.add({
+	pattern = {
+		[".*%.js"] = {
+			priority = 10,
+			function(_, bufnr)
+				if not bufnr then
+					return
+				end
+				-- Read the first line of the buffer
+				local lines = vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)
+				if lines[1] and lines[1]:match("^%.pragma library") then
+					return "qmljs"
+				end
+				-- If it's not a Quickshell file, fallback to default 'javascript'
+			end,
+		},
+	},
+})

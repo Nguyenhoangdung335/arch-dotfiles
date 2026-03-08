@@ -22,3 +22,16 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.keymap.set("n", "<C-l>", "<cmd>TmuxNavigateRight<cr>", { buffer = true, silent = true })
 	end,
 })
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+	desc = "Forcefully shut down LSP clients on exit to prevent orphaned Node processes",
+	group = vim.api.nvim_create_augroup("CleanUpLSPs", { clear = true }),
+	callback = function()
+		---@diagnostic disable-next-line: deprecated
+		local clients = vim.lsp.get_clients and vim.lsp.get_clients() or vim.lsp.get_active_clients()
+		for _, client in ipairs(clients) do
+			-- The 'true' argument forces the client to stop immediately
+			vim.lsp.stop_client(client.id, true)
+		end
+	end,
+})
