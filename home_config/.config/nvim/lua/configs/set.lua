@@ -28,7 +28,10 @@ vim.opt.clipboard = "unnamedplus" -- Use system clipboard
 -- Display & Colors
 -- ===========================
 vim.opt.termguicolors = true -- Enable 24-bit RGB colors
-vim.opt.wrap = false -- Disable line wrap
+vim.opt.wrap = false -- Disable line wrap by default
+vim.opt.breakindent = true
+vim.opt.breakindentopt = "shift:0"
+vim.opt.linebreak = true
 vim.opt.colorcolumn = "120" -- Highlight column 120
 
 -- ===========================
