@@ -3,3 +3,4 @@
 home_config/.config/tmux/plugins/*
 home_config/.config/nvim/specs
 .git
+home_config/.config/quickshell/Backend/target/
