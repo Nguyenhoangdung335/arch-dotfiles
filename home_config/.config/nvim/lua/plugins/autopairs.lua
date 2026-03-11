@@ -27,7 +27,7 @@ return {
 				map_c_w = false, -- False due to conflict with telescope picker prompt
 				check_ts = true,
 				ts_config = {
-					lua = { "string", "source" }, -- Don't pair inside Lua strings
+					lua = { "string" },
 					javascript = { "string", "template_string" }, -- Don't pair inside JS strings
 				},
 				fast_wrap = {
@@ -72,16 +72,20 @@ return {
 
 			-- Generic <> pair (exclude markup/tag filetypes)
 			npairs.add_rules({
-				Rule("<", ">"):with_pair(cond.not_filetypes({
-					"html",
-					"xml",
-					"javascript",
-					"javascriptreact",
-					"typescript",
-					"typescriptreact",
-					"jsx",
-					"tsx",
-				})),
+				Rule("<", ">")
+					:with_pair(cond.not_filetypes({
+						"html",
+						"xml",
+						"markdown",
+						-- "javascript",
+						-- "javascriptreact",
+						-- "typescript",
+						-- "typescriptreact",
+						-- "jsx",
+						-- "tsx",
+					}))
+					:with_pair(cond.before_regex("[%a_:]"))
+					:with_pair(cond.not_after_regex("[%w%(%[%{%<]")),
 			})
 		end,
 	},
