@@ -62,6 +62,8 @@ return {
 					completion = cmp.config.window.bordered({
 						border = "rounded",
 						winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
+						col_offset = -3,
+						side_padding = 0,
 					}),
 					documentation = cmp.config.window.bordered({
 						border = "rounded",
@@ -137,21 +139,69 @@ return {
 				},
 				formatting = {
 					format = function(entry, item)
-						local color_item = require("nvim-highlight-colors").format(entry, { kind = item.kind })
+						local source_names = {
+							nvim_lsp = "[LSP]",
+							luasnip = "[LuaSnip]",
+							copilot = "[Copilot]",
+							supermaven = "[Supermaven]",
+							buffer = "[Buffer]",
+							path = "[Path]",
+							cmdline = "[Cmd]",
+						}
+
+						local original_kind = item.kind or ""
+						local label = entry:get_completion_item().label or ""
+
+						-- 1. Use "symbol_text" to ensure BOTH the icon and the text (e.g. "Struct") appear!
 						item = require("lspkind").cmp_format({
 							mode = "symbol_text",
 							maxwidth = 50,
-							ellipsis_char = "...",
-							show_labelDetails = true,
-							before = function(ent, vim_item)
-								vim_item.menu = "[" .. ent.source.name .. "]"
-								return vim_item
-							end,
+							show_labelDetails = true, -- Fetch the crate path from rust-analyzer
 						})(entry, item)
-						if color_item.abbr_hl_group then
-							item.kind_hl_group = color_item.abbr_hl_group
-							item.kind = color_item.abbr
+
+						-- Add nice padding to the left column
+						if item.kind then
+							item.kind = item.kind .. " "
 						end
+
+						-- 2. Extract and smartly format the Rust Path
+						local raw_menu = item.menu or ""
+						local clean_path = ""
+
+						-- Extract the inside text from "(use tokio::io::WriteHalf)"
+						local use_match = raw_menu:match("%(use (.-)%)")
+						if use_match then
+							clean_path = use_match
+
+							-- SMART SUBTRACTION: Remove the struct name from the end of the module path
+							-- Find the last segment of the path (e.g. "WriteHalf" from "tokio::io::WriteHalf")
+							local last_segment = clean_path:match("::([^:]+)$")
+
+							-- If the completion label (e.g. "WriteHalf<...>") starts with that segment,
+							-- we dynamically slice it off the end of the path!
+							if last_segment and vim.startswith(label, last_segment) then
+								-- Subtract the length of the segment and the "::"
+								clean_path = string.sub(clean_path, 1, #clean_path - #last_segment - 2)
+							end
+						end
+
+						-- 3. Construct the right-side menu column
+						local source = source_names[entry.source.name] or ("[" .. entry.source.name .. "]")
+
+						-- No more duplicate "Struct". ONLY show the source and the subtracted path!
+						if clean_path ~= "" then
+							item.menu = " " .. source .. " " .. clean_path
+						else
+							item.menu = " " .. source
+						end
+
+						-- 4. Support for nvim-highlight-colors (Tailwind/CSS rendering)
+						local color_item = require("nvim-highlight-colors").format(entry, { kind = original_kind })
+						if color_item and color_item.abbr_hl_group then
+							item.kind_hl_group = color_item.abbr_hl_group
+							item.kind = "Color " .. color_item.abbr .. " "
+						end
+
 						return item
 					end,
 				},
