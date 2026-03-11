@@ -103,9 +103,13 @@ return {
 							cargo = {
 								allFeatures = true,
 								loadOutDirsFromCheck = true,
-								buildScripts = {
-									enable = true,
-								},
+								buildScripts = { enable = true },
+							},
+							completion = { fullFunctionSignature = true },
+							hover = {
+								show = { traitAssocItems = 10 },
+								documentation = { enable = true },
+								links = { enable = true },
 							},
 							checkOnSave = true,
 							check = {
@@ -114,28 +118,13 @@ return {
 								features = "all",
 							},
 							inlayHints = {
-								bindingModeHints = {
-									enable = false,
-								},
-								chainingHints = {
-									enable = true,
-								},
-								closingBraceHints = {
-									enable = true,
-									minLines = 25,
-								},
-								closureReturnTypeHints = {
-									enable = "never",
-								},
-								lifetimeElisionHints = {
-									enable = "never",
-								},
-								parameterHints = {
-									enable = true,
-								},
-								reborrowHints = {
-									enable = "never",
-								},
+								bindingModeHints = { enable = false },
+								chainingHints = { enable = true },
+								closingBraceHints = { enable = true, minLines = 25 },
+								closureReturnTypeHints = { enable = "never" },
+								lifetimeElisionHints = { enable = "never" },
+								parameterHints = { enable = true },
+								reborrowHints = { enable = "never" },
 								renderColons = true,
 								typeHints = {
 									enable = true,
@@ -144,9 +133,7 @@ return {
 								},
 							},
 							imports = {
-								granularity = {
-									group = "module",
-								},
+								granularity = { group = "module" },
 								prefix = "self",
 							},
 						},
@@ -254,6 +241,7 @@ return {
 				local buf_opts = { noremap = true, silent = true, buffer = bufnr }
 
 				-- LSP Saga Keymaps
+				-- vim.keymap.set("n", "K", vim.lsp.buf.hover, buf_opts)
 				vim.keymap.set("n", "K", function()
 					for _, win in ipairs(vim.api.nvim_list_wins()) do
 						local config = vim.api.nvim_win_get_config(win)
