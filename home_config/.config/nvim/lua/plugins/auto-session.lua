@@ -51,7 +51,7 @@ return {
 			},
 
 			-- 3. Use post_restore_cmds to read that Global Variable and switch Tmux
-			post_restore_cmds = {
+			--[[ post_restore_cmds = {
 				function()
 					-- Read the variable we saved earlier
 					local tmux_session = vim.g.AutoSessionTmux
@@ -78,7 +78,7 @@ return {
 					vim.g.AutoSessionTmux = nil
 				end,
 				-- "Neotree filesystem show" -- (Optional) Reopen tree
-			},
+			}, ]]
 		},
 	},
 }
