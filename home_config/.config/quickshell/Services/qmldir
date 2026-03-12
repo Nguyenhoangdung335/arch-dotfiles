@@ -1,3 +1,3 @@
 module Services
-singleton ThemeModel 1.0 ThemeModel.qml
-singleton WallpaperModel 1.0 WallpaperModel.qml
+singleton ThemeService 1.0 ThemeService.qml
+singleton WallpaperService 1.0 WallpaperService.qml

@@ -10,7 +10,7 @@ Singleton {
     id: root
 
     // Currently selected color palette (raw from family)
-    readonly property Models.ThemePalette currentPalette: getPalette(
+    readonly property Models.ThemePaletteModel currentPalette: getPalette(
         Cfg.Theme.paletteFamily,
         Cfg.Theme.paletteVariant
     )
@@ -27,7 +27,7 @@ Singleton {
     readonly property color success: currentPalette ? currentPalette.success : "#00ff00"
     readonly property color info: currentPalette ? currentPalette.info : "#0000ff"
 
-    function getPalette(family, variant): Models.ThemePalette {
+    function getPalette(family, variant): Models.ThemePaletteModel {
         // Use the new naming format: Family_Variant
         const paletteName = family + "_" + variant;
         
@@ -46,7 +46,8 @@ Singleton {
         case "Dracula_Alucard":
             return Dracula_Alucard;
         default:
-            console.warn("Unknown palette: " + paletteName + ", falling back to Catppuccin_Mocha");
+            // Omit warning to avoid spam during transient QML binding evaluations
+            // console.warn("Unknown palette: " + paletteName + ", falling back to Catppuccin_Mocha");
             return Catppuccin_Mocha;
         }
     }

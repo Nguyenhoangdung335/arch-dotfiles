@@ -4,25 +4,25 @@ import QtQuick
 
 import "../../Models" as Models
 
-Models.ThemePalette {
+Models.ThemePaletteModel {
     id: root
     family: "Dracula"
     variant: "Alucard"
     emoji: "⚔️"
     previewColors: [ fg, bg, primary, secondary, accent, surface, error, warning, success, info ]
     colors: [
-        Models.ColorName { name: "background"; value: root.background },
-        Models.ColorName { name: "currentLine"; value: root.currentLine },
-        Models.ColorName { name: "selection"; value: root.selection },
-        Models.ColorName { name: "foreground"; value: root.foreground },
-        Models.ColorName { name: "comment"; value: root.comment },
-        Models.ColorName { name: "cyan"; value: root.cyan },
-        Models.ColorName { name: "green"; value: root.green },
-        Models.ColorName { name: "orange"; value: root.orange },
-        Models.ColorName { name: "pink"; value: root.pink },
-        Models.ColorName { name: "purple"; value: root.purple },
-        Models.ColorName { name: "red"; value: root.red },
-        Models.ColorName { name: "yellow"; value: root.yellow }
+        Models.ColorModel { name: "background"; value: root.background },
+        Models.ColorModel { name: "currentLine"; value: root.currentLine },
+        Models.ColorModel { name: "selection"; value: root.selection },
+        Models.ColorModel { name: "foreground"; value: root.foreground },
+        Models.ColorModel { name: "comment"; value: root.comment },
+        Models.ColorModel { name: "cyan"; value: root.cyan },
+        Models.ColorModel { name: "green"; value: root.green },
+        Models.ColorModel { name: "orange"; value: root.orange },
+        Models.ColorModel { name: "pink"; value: root.pink },
+        Models.ColorModel { name: "purple"; value: root.purple },
+        Models.ColorModel { name: "red"; value: root.red },
+        Models.ColorModel { name: "yellow"; value: root.yellow }
     ]
     isDark: false
 

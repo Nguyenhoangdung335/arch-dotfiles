@@ -4,39 +4,39 @@ import QtQuick
 
 import "../../Models" as Models
 
-Models.ThemePalette {
+Models.ThemePaletteModel {
     id: root
     family: "Catppuccin"
     variant: "Latte"
     emoji: "🌻"
     previewColors: [ fg, bg, primary, secondary, accent, surface, error, warning, success, info ]
     colors: [
-        Models.ColorName { name: "rosewater"; value: root.rosewater },
-        Models.ColorName { name: "flamingo"; value: root.flamingo },
-        Models.ColorName { name: "pink"; value: root.pink },
-        Models.ColorName { name: "mauve"; value: root.mauve },
-        Models.ColorName { name: "red"; value: root.red },
-        Models.ColorName { name: "maroon"; value: root.maroon },
-        Models.ColorName { name: "peach"; value: root.peach },
-        Models.ColorName { name: "yellow"; value: root.yellow },
-        Models.ColorName { name: "green"; value: root.green },
-        Models.ColorName { name: "teal"; value: root.teal },
-        Models.ColorName { name: "sky"; value: root.sky },
-        Models.ColorName { name: "sapphire"; value: root.sapphire },
-        Models.ColorName { name: "blue"; value: root.blue },
-        Models.ColorName { name: "lavender"; value: root.lavender },
-        Models.ColorName { name: "text"; value: root.text },
-        Models.ColorName { name: "subtext1"; value: root.subtext1 },
-        Models.ColorName { name: "subtext0"; value: root.subtext0 },
-        Models.ColorName { name: "overlay2"; value: root.overlay2 },
-        Models.ColorName { name: "overlay1"; value: root.overlay1 },
-        Models.ColorName { name: "overlay0"; value: root.overlay0 },
-        Models.ColorName { name: "surface2"; value: root.surface2 },
-        Models.ColorName { name: "surface1"; value: root.surface1 },
-        Models.ColorName { name: "surface0"; value: root.surface0 },
-        Models.ColorName { name: "base"; value: root.base },
-        Models.ColorName { name: "mantle"; value: root.mantle },
-        Models.ColorName { name: "crust"; value: root.crust }
+        Models.ColorModel { name: "rosewater"; value: root.rosewater },
+        Models.ColorModel { name: "flamingo"; value: root.flamingo },
+        Models.ColorModel { name: "pink"; value: root.pink },
+        Models.ColorModel { name: "mauve"; value: root.mauve },
+        Models.ColorModel { name: "red"; value: root.red },
+        Models.ColorModel { name: "maroon"; value: root.maroon },
+        Models.ColorModel { name: "peach"; value: root.peach },
+        Models.ColorModel { name: "yellow"; value: root.yellow },
+        Models.ColorModel { name: "green"; value: root.green },
+        Models.ColorModel { name: "teal"; value: root.teal },
+        Models.ColorModel { name: "sky"; value: root.sky },
+        Models.ColorModel { name: "sapphire"; value: root.sapphire },
+        Models.ColorModel { name: "blue"; value: root.blue },
+        Models.ColorModel { name: "lavender"; value: root.lavender },
+        Models.ColorModel { name: "text"; value: root.text },
+        Models.ColorModel { name: "subtext1"; value: root.subtext1 },
+        Models.ColorModel { name: "subtext0"; value: root.subtext0 },
+        Models.ColorModel { name: "overlay2"; value: root.overlay2 },
+        Models.ColorModel { name: "overlay1"; value: root.overlay1 },
+        Models.ColorModel { name: "overlay0"; value: root.overlay0 },
+        Models.ColorModel { name: "surface2"; value: root.surface2 },
+        Models.ColorModel { name: "surface1"; value: root.surface1 },
+        Models.ColorModel { name: "surface0"; value: root.surface0 },
+        Models.ColorModel { name: "base"; value: root.base },
+        Models.ColorModel { name: "mantle"; value: root.mantle },
+        Models.ColorModel { name: "crust"; value: root.crust }
     ]
     isDark: false
     // Standard Interface
