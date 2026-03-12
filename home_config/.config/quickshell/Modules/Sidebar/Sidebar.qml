@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
@@ -6,6 +7,8 @@ import Quickshell.Io
 import Quickshell.Hyprland
 
 import "../../Themes" as Th
+import "../../Components" as Comp
+import "../../Config" as Cfg
 
 // Right-side sliding sidebar with improved animations
 PanelWindow {
@@ -13,9 +16,9 @@ PanelWindow {
     
     property bool isOpen: false
     property int activeTab: 0
+    property bool isAnimating: slideAnim.running
     
-    readonly property int sidebarWidth: 400
-    readonly property int collapsedWidth: 0
+    readonly property int sidebarWidth: Screen.width > 0 ? Math.min(Math.max(Screen.width * 0.22, 350), 500) : 400
     
     color: "transparent"
     
@@ -27,15 +30,39 @@ PanelWindow {
     
     exclusionMode: ExclusionMode.Ignore
     aboveWindows: true
-    focusable: true
     
-    implicitWidth: root.isOpen ? root.sidebarWidth : 0
+    // 1. Fix focus loss by only making it focusable when open
+    focusable: root.isOpen
+    
+    // ✨ FIX "mid-air expanding": Keep window geometry constant to avoid Hyprland layer animations.
+    // Instead, rely on contentWrapper's X translation and clip input via mask.
+    implicitWidth: root.sidebarWidth
+    
+    mask: Region {
+        item: contentWrapper
+    }
 
-    Behavior on implicitWidth {
-        NumberAnimation {
-            id: windowAnim
-            duration: 200
-            easing.type: Easing.OutCubic
+    // Keyboard navigation
+    Item {
+        anchors.fill: parent
+        focus: root.isOpen
+        
+        Shortcut {
+            sequences: [Cfg.KeyBinds.sidebarNextTab, Cfg.KeyBinds.sidebarNextTabAlt, Cfg.KeyBinds.sidebarNextTabVim]
+            onActivated: root.activeTab = (root.activeTab + 1) % 2
+            enabled: root.isOpen
+        }
+        
+        Shortcut {
+            sequences: [Cfg.KeyBinds.sidebarPrevTab, Cfg.KeyBinds.sidebarPrevTabAlt, Cfg.KeyBinds.sidebarPrevTabVim]
+            onActivated: root.activeTab = (root.activeTab - 1 + 2) % 2
+            enabled: root.isOpen
+        }
+        
+        Shortcut {
+            sequences: [Cfg.KeyBinds.sidebarClose, Cfg.KeyBinds.sidebarCloseAlt]
+            onActivated: root.close()
+            enabled: root.isOpen
         }
     }
 
@@ -45,46 +72,26 @@ PanelWindow {
         
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        // anchors.right: parent.right
         
-        // width: root.isOpen ? root.sidebarWidth : root.collapsedWidth
         width: root.sidebarWidth
-        x: root.isOpen ? parent.width - width : parent.width
+        
+        // 2. Fix animation: slide from right side
+        x: root.isOpen ? 0 : root.sidebarWidth
         clip: false
-        enabled: root.isOpen || windowAnim.running
-
-        // transformOrigin: Item.Right
-        // scale: root.isOpen ? 1 : 0
-        // opacity: root.isOpen ? 1 : 0
+        enabled: root.isOpen || root.isAnimating
         
         Behavior on x {
             NumberAnimation {
                 id: slideAnim
                 duration: 500
-                easing.type: Easing.InQuad
-                // easing.overshoot: 0.8
-            }
-        }
-        
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 180
-                easing.type: Easing.OutQuad
+                easing.type: Easing.OutCubic
             }
         }
 
-        // Glassmorphism Background
+        // REVERTED: Glassmorphism Background with MultiEffect
         Rectangle {
             id: blurBackground
             anchors.fill: parent
-            // visible: root.isOpen
-            opacity: contentWrapper.x < root.sidebarWidth * 0.3 ? 1 : 0
-            // opacity: root.isOpen ? 1 : 0
-            enabled: root.isOpen || slideAnim.running
-
-            Behavior on opacity {
-                NumberAnimation { duration: 120 }
-            }
             
             color: Qt.rgba(
                 Th.Theme.bg.r,
@@ -120,20 +127,10 @@ PanelWindow {
         ColumnLayout {
             id: contentLayout
             anchors.fill: parent
-            anchors.margins: 16
+            // 4. Fixed margin/padding
+            anchors.margins: 20
             spacing: 16
             visible: contentWrapper.width > 0
-            
-            // ✨ Fade in/out based on sidebar state
-            // opacity: root.isOpen ? 1 : 0
-            opacity: root.isOpen && contentWrapper.x < root.sidebarWidth * 0.3 ? 1 : 0
-            
-            // Behavior on opacity {
-            //     NumberAnimation { 
-            //         duration: 250
-            //         easing.type: Easing.OutCubic
-            //     }
-            // }
             
             // Header
             RowLayout {
@@ -147,46 +144,6 @@ PanelWindow {
                     font.bold: true
                     Layout.fillWidth: true
                 }
-                
-                // Close button with hover effect
-                // Rectangle {
-                //     width: 32
-                //     height: 32
-                //     radius: 16
-                //     
-                //     color: closeArea.containsMouse 
-                //            ? Qt.rgba(Th.Theme.fg.r, Th.Theme.fg.g, Th.Theme.fg.b, 0.15)
-                //            : "transparent"
-                //     
-                //     Behavior on color { 
-                //         ColorAnimation { duration: 200 } 
-                //     }
-                //     
-                //     // ✨ Scale on hover
-                //     scale: closeArea.pressed ? 0.9 : (closeArea.containsMouse ? 1.1 : 1.0)
-                //     
-                //     Behavior on scale {
-                //         NumberAnimation {
-                //             duration: 150
-                //             easing.type: Easing.OutCubic
-                //         }
-                //     }
-                //     
-                //     Text {
-                //         anchors.centerIn: parent
-                //         text: "✕"
-                //         color: Th.Theme.fg
-                //         font.pixelSize: 16
-                //     }
-                //     
-                //     MouseArea {
-                //         id: closeArea
-                //         anchors.fill: parent
-                //         hoverEnabled: true
-                //         cursorShape: Qt.PointingHandCursor
-                //         onClicked: root.isOpen = false
-                //     }
-                // }
             }
             
             // Tab Bar
@@ -194,14 +151,14 @@ PanelWindow {
                 Layout.fillWidth: true
                 spacing: 8
                 
-                TabButton {
+                Comp.SidebarTabButton {
                     text: "🎨 Themes"
                     isActive: root.activeTab === 0
                     onClicked: root.activeTab = 0
                     Layout.fillWidth: true
                 }
                 
-                TabButton {
+                Comp.SidebarTabButton {
                     text: "🖼️ Wallpapers"
                     isActive: root.activeTab === 1
                     onClicked: root.activeTab = 1
@@ -216,51 +173,22 @@ PanelWindow {
                 color: Qt.rgba(Th.Theme.fg.r, Th.Theme.fg.g, Th.Theme.fg.b, 0.1)
             }
             
-            // Tab Content with simple fade
-            // Loader {
-            //     id: tabLoader
-            //     Layout.fillWidth: true
-            //     Layout.fillHeight: true
-            //     
-            //     sourceComponent: root.activeTab === 0 ? themeTab : wallpaperTab
-            //     
-            //     // ✨ Fade transition on tab change
-            //     opacity: 1
-            //     
-            //     Behavior on opacity {
-            //         NumberAnimation { 
-            //             duration: 200
-            //             easing.type: Easing.InOutQuad
-            //         }
-            //     }
-            //     
-            //     onSourceComponentChanged: {
-            //         opacity = 0
-            //         Qt.callLater(function() {
-            //             opacity = 1
-            //         })
-            //     }
-            // }
+            // Tab Content
             StackLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 currentIndex: root.activeTab
 
-                ThemeTab {}
-                WallpaperTab {}
+                ThemeTab {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                }
+                WallpaperTab {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                }
             }
         }
-    }
-    
-    // Tab Components
-    Component {
-        id: themeTab
-        ThemeTab {}
-    }
-    
-    Component {
-        id: wallpaperTab
-        WallpaperTab {}
     }
     
     // Toggle Function
@@ -268,10 +196,18 @@ PanelWindow {
         isOpen = !isOpen;
     }
     
+    function open() {
+        isOpen = true;
+    }
+    
+    function close() {
+        isOpen = false;
+    }
+    
     // GlobalShortcut
     GlobalShortcut {
         id: quickshell
-        name: "sidebarToggle"
+        name: Cfg.KeyBinds.toggleSidebar
         description: "Toggle settings sidebar"
         
         onPressed: root.toggle()
@@ -291,82 +227,6 @@ PanelWindow {
         
         function close(): void {
             root.isOpen = false;
-        }
-    }
-    
-    // Enhanced TabButton Component
-    component TabButton: Rectangle {
-        id: tabBtn
-        
-        property string text: ""
-        property bool isActive: false
-        signal clicked()
-        
-        height: 40
-        radius: 8
-        
-        color: isActive 
-               ? Th.Theme.primary
-               : tabBtnArea.containsMouse 
-                 ? Qt.rgba(Th.Theme.fg.r, Th.Theme.fg.g, Th.Theme.fg.b, 0.1)
-                 : "transparent"
-        
-        border.width: isActive ? 0 : 1
-        border.color: Qt.rgba(Th.Theme.fg.r, Th.Theme.fg.g, Th.Theme.fg.b, 0.2)
-        
-        // ✨ Smooth color transitions
-        Behavior on color { 
-            ColorAnimation { 
-                duration: 200
-                easing.type: Easing.InOutQuad
-            } 
-        }
-        
-        // ✨ Press feedback
-        scale: tabBtnArea.pressed ? 0.95 : 1.0
-        Behavior on scale {
-            NumberAnimation {
-                duration: 100
-                easing.type: Easing.OutCubic
-            }
-        }
-        
-        Text {
-            anchors.centerIn: parent
-            text: tabBtn.text
-            color: tabBtn.isActive ? Th.Theme.bg : Th.Theme.fg
-            font.pixelSize: 14
-            font.weight: Font.Medium
-            
-            Behavior on color {
-                ColorAnimation { duration: 200 }
-            }
-        }
-        
-        MouseArea {
-            id: tabBtnArea
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: tabBtn.clicked()
-        }
-        
-        // ✨ Active indicator
-        Rectangle {
-            anchors.bottom: parent.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: tabBtn.isActive ? parent.width - 16 : 0
-            height: 2
-            radius: 1
-            color: Th.Theme.bg
-            visible: tabBtn.isActive
-            
-            Behavior on width {
-                NumberAnimation {
-                    duration: 250
-                    easing.type: Easing.OutCubic
-                }
-            }
         }
     }
 }

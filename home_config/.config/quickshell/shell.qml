@@ -10,7 +10,7 @@ ShellRoot {
 
     // Load Services on startup
     Component.onCompleted: {
-        Svc.ThemeModel.load();
+        Svc.ThemeService.load();
     }
     //
     // This creates a bar on every connected monitor automatically

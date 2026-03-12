@@ -9,7 +9,7 @@ Rectangle {
     id: root
     
     // Public API
-    Svc.ThemeModel {
+    Svc.ThemeService {
         id: themeModel
     }
     
