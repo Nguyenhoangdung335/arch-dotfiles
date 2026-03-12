@@ -31,7 +31,7 @@ return {
 					javascript = { "string", "template_string" }, -- Don't pair inside JS strings
 				},
 				fast_wrap = {
-					map = "<M-e>", -- Press Alt+e to trigger fast wrap
+					map = false, -- Disable default <M-e> to allow custom pre-hook
 					chars = { "{", "[", "(", '"', "'", "`", "<" },
 					pattern = string.gsub([[ [%'%"%)%>%]%)%}%,] ]], "%s+", ""),
 					offset = 0,
@@ -88,5 +88,31 @@ return {
 					:with_pair(cond.not_after_regex("[%w%(%[%{%<]")),
 			})
 		end,
+		keys = {
+			{
+				"<M-e>",
+				mode = "i",
+				function()
+					local ok, sk = pcall(require, "sidekick.nes")
+					if ok then
+						if sk.have() then
+							sk.clear()
+						end
+						sk.disable()
+						-- Temporarily disable sidekick nes, and enabled again when the next character is inserted
+						vim.api.nvim_create_autocmd("InsertCharPre", {
+							buffer = 0,
+							once = true,
+							callback = function()
+								sk.enable()
+							end,
+						})
+					end
+					return "<Esc>l<cmd>lua require('nvim-autopairs.fastwrap').show()<CR>"
+				end,
+				expr = true,
+				desc = "Autopairs Fast Wrap",
+			},
+		},
 	},
 }
