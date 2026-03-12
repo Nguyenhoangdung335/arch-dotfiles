@@ -1,3 +1,34 @@
+local kind_priority = {
+	Function = 1, -- highest priority
+	Method = 2,
+	Struct = 3,
+	Enum = 4,
+	Interface = 5,
+	Field = 6,
+	Variable = 7,
+	Constant = 8,
+	Module = 9,
+	Property = 10,
+	Keyword = 11,
+	Snippet = 12,
+	Text = 13,
+}
+
+local kind_compare = function(entry1, entry2)
+	local kind1 = entry1:get_kind()
+	local kind2 = entry2:get_kind()
+
+	local name1 = require("cmp.types").lsp.CompletionItemKind[kind1]
+	local name2 = require("cmp.types").lsp.CompletionItemKind[kind2]
+
+	local p1 = kind_priority[name1] or 100
+	local p2 = kind_priority[name2] or 100
+
+	if p1 ~= p2 then
+		return p1 < p2
+	end
+end
+
 local function apply_cmp_highlights()
 	local cat_ok, cat_palettes = pcall(require, "catppuccin.palettes")
 	if cat_ok then
@@ -126,6 +157,7 @@ return {
 						cmp.config.compare.offset,
 						cmp.config.compare.exact,
 						cmp.config.compare.score,
+						kind_compare,
 						cmp.config.compare.source,
 						cmp.config.compare.locality,
 						cmp.config.compare.kind,
