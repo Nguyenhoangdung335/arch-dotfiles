@@ -70,6 +70,8 @@ pub trait AccessPoint {
     fn ssid(&self) -> zbus::Result<Vec<u8>>;
     #[zbus(property)]
     fn strength(&self) -> zbus::Result<u8>;
+    #[zbus(property)]
+    fn hw_address(&self) -> zbus::Result<String>;
 }
 
 #[proxy(

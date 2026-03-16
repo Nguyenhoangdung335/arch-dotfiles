@@ -9,6 +9,8 @@ use self::commands::NetworkCommand;
 use self::proxies::{AccessPointProxy, DeviceWirelessProxy};
 use self::queries::NetworkQuery;
 use self::state::{NetworkState, WifiAccessPoint, create_network_state};
+use futures::StreamExt;
+use futures::stream::FuturesUnordered;
 use tokio::sync::watch::{Receiver, Sender};
 
 pub struct NetworkModule {
@@ -60,44 +62,60 @@ impl NetworkModule {
                 .build()
                 .await
             {
-                let mut aps: Vec<WifiAccessPoint> = Vec::new();
+                let mut futures_tasks = FuturesUnordered::new();
                 if let Ok(object_paths) = wifi_access_points.get_all_access_points().await {
                     for path in object_paths {
-                        let ap_proxy = AccessPointProxy::builder(&sys_bus)
-                            .path(path.clone())
-                            .unwrap()
-                            .build()
-                            .await
-                            .unwrap();
-                        let ssid = ap_proxy.ssid().await.unwrap();
-                        let strength = ap_proxy.strength().await.unwrap();
-                        aps.push(WifiAccessPoint {
-                            ssid: String::from_utf8_lossy(&ssid).to_string(),
-                            strength,
-                            object_path: path.to_string(),
+                        let sys_bus = sys_bus.clone();
+                        futures_tasks.push(async move {
+                            let ap_proxy = match AccessPointProxy::builder(&sys_bus)
+                                .path(path.clone())
+                                .unwrap()
+                                .build()
+                                .await
+                            {
+                                Ok(proxy) => proxy,
+                                Err(e) => {
+                                    eprintln!("Skipping AP {}: {:?}", path, e);
+                                    return None;
+                                }
+                            };
+
+                            let (ssid_res, strength_res, hw_address_res) = tokio::join!(
+                                ap_proxy.ssid(),
+                                ap_proxy.strength(),
+                                ap_proxy.hw_address()
+                            );
+                            let (ssid, strength, hw_address) =
+                                match (ssid_res, strength_res, hw_address_res) {
+                                    (Ok(ssid), Ok(strength), Ok(hw_address)) => {
+                                        if ssid.is_empty() {
+                                            return None;
+                                        }
+                                        (ssid, strength, hw_address)
+                                    }
+                                    _ => return None,
+                                };
+
+                            Some(WifiAccessPoint {
+                                ssid: String::from_utf8_lossy(&ssid).to_string(),
+                                strength,
+                                hw_address,
+                                object_path: path.to_string(),
+                            })
                         });
                     }
-                }
 
-                state_tx.send_if_modified(|state| state.send_wifi_access_points_changed(Some(aps)));
+                    let mut aps: Vec<WifiAccessPoint> = Vec::new();
+                    while let Some(result) = futures_tasks.next().await {
+                        if let Some(ap) = result {
+                            aps.push(ap);
+                        }
+                    }
+
+                    state_tx.send_if_modified(|state| state.send_wifi_access_points_changed(aps));
+                }
             }
         });
-
-        // TODO: Comment logic for now, intended to spawn some kind of async task
-        // or thread to get wifi access points object paths and get properties of
-        // each access point
-
-        /* let wifi_device_proxy = DeviceWirelessProxy::builder(&self.sys_bus)
-            .path(wifi_device_object_path.unwrap())?
-            .build()
-            .await?;
-
-        let access_points = wifi_device_proxy.get_all_access_points().await?;
-        state.wifi_access_points = {
-            let access_points: Vec<String> =
-                access_points.iter().map(|ap| ap.to_string()).collect();
-            Some(access_points)
-        }; */
 
         Ok(())
     }

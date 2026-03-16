@@ -6,12 +6,13 @@ use crate::utils::compare::update_if_changed;
 pub struct WifiAccessPoint {
     pub ssid: String,        // ay
     pub strength: u8,        // y
+    pub hw_address: String,  // s
     pub object_path: String, // zvariant::OwnedObjectPath
 }
 
 #[derive(Clone, Debug, serde::Serialize, Default, PartialEq, Eq)]
 pub struct NetworkState {
-    pub wifi_access_points: Option<Vec<WifiAccessPoint>>,
+    pub wifi_access_points: Vec<WifiAccessPoint>,
     pub active_connection: Option<WifiAccessPoint>,
     pub is_wireless_enabled: bool,
     pub wifi_device_object_path: Option<String>,
@@ -26,10 +27,7 @@ impl NetworkState {
         update_if_changed(&mut self.wifi_device_object_path, new_value)
     }
 
-    pub fn send_wifi_access_points_changed(
-        &mut self,
-        new_value: Option<Vec<WifiAccessPoint>>,
-    ) -> bool {
+    pub fn send_wifi_access_points_changed(&mut self, new_value: Vec<WifiAccessPoint>) -> bool {
         update_if_changed(&mut self.wifi_access_points, new_value)
     }
 }
