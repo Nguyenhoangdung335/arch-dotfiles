@@ -20,6 +20,7 @@ Singleton {
     property real intervalMultiplier: 2.5
     property int retryCount: 0
     property int currentRetryInterval: baseRetryInterval
+    property bool isRetrying: false
 
     property var networkState: {
         "is_wireless_enabled": false,
@@ -41,14 +42,14 @@ Singleton {
                 if (connected) {
                     Log.info("BackendService: Connected to Rust Backend!");
                     reconnectTimer.stop();
+                    executeReconnect.stop();
+                    root.isRetrying = false;
                     root.retryCount = 0;
-                    root.currentRetryInterval = root.baseRetryInterval;
-                } else if (root.retryCount === 0) {
-                    Log.warn("BackendService: Unexpectedly disconnected. Resetting and reconnecting...");
-                    root.currentRetryInterval = root.baseRetryInterval;
-                    reconnectTimer.interval = root.currentRetryInterval;
-                    reconnectTimer.start();
-
+                } else if (!root.isRetrying) {
+                    // Only enter the retry loop for unexpected disconnects.
+                    // Mid-retry socket teardowns are intentional and must not re-enter.
+                    Log.warn("BackendService: Unexpectedly disconnected. Starting retry sequence...");
+                    root.startRetrying();
                 }
             }
 
@@ -66,12 +67,13 @@ Singleton {
 
     Timer {
         id: reconnectTimer
-        interval: root.currentRetryInterval
+        interval: root.baseRetryInterval
         repeat: false
         running: false
         onTriggered: {
             if (root.retryCount >= root.maxRetries) {
                 Log.error("BackendService: Max retries (" + root.maxRetries + ") reached. Giving up.");
+                root.isRetrying = false;
                 return;
             }
             root.retryCount += 1;
@@ -89,6 +91,8 @@ Singleton {
         running: false
         onTriggered: {
             socketLoader.active = true;
+            // Schedule next attempt optimistically. onConnectionStateChanged cancels
+            // this timer on success via reconnectTimer.stop().
             reconnectTimer.interval = root.currentRetryInterval;
             reconnectTimer.start();
         }
@@ -96,9 +100,16 @@ Singleton {
 
     Component.onCompleted: {
         if (!socketLoader.item || !socketLoader.item.connected) {
-            reconnectTimer.interval = root.currentRetryInterval;
-            reconnectTimer.start();
+            root.startRetrying();
         }
+    }
+
+    function startRetrying() {
+        root.isRetrying = true;
+        root.retryCount = 0;
+        root.currentRetryInterval = root.baseRetryInterval;
+        reconnectTimer.interval = root.currentRetryInterval;
+        reconnectTimer.start();
     }
 
     function resolveIncomingEvent(jsonString) {
