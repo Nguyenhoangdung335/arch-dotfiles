@@ -47,9 +47,8 @@ impl NetworkModule {
             eprintln!("No wifi device object path found");
             return Ok(());
         }
-        self.state_tx.send_if_modified(|state| {
-            state.send_wifi_device_object_path_changed(wifi_device_object_path.clone())
-        });
+        // Skipping on sending the device_object_path because
+        // it is already sent inside query method already.
 
         let sys_bus = self.sys_bus.clone();
         let state_tx = self.state_tx.clone();
