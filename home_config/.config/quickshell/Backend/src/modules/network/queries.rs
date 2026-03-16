@@ -1,3 +1,4 @@
+use futures::stream::StreamExt;
 use tokio::sync::watch::Sender;
 use zbus::fdo::PropertiesProxy;
 
@@ -31,7 +32,7 @@ impl NetworkQuery {
     pub async fn get_wifi_device_object_path(&self) -> anyhow::Result<Option<String>> {
         let devices = self.nm_proxy.devices().await?;
         let mut wifi_device = None;
-        for d in devices {
+        for d in devices.into_iter() {
             let device_proxy = DeviceProxy::builder(&self.sys_bus)
                 .path(d.clone())?
                 .build()
@@ -39,14 +40,15 @@ impl NetworkQuery {
 
             match device_proxy.device_type().await {
                 Ok(t) => {
-                    wifi_device = (t == NMDeviceType::WiFi as u32).then(|| d.clone());
-                    break;
+                    if t == NMDeviceType::WiFi as u32 {
+                        wifi_device = Some(d.clone());
+                        break;
+                    }
                 }
                 Err(e) => eprintln!("Failed to get device type: {:?}", e),
             }
         }
 
-        // Update the state and notify all Quickshell socket connections instantly!
         let mut object_path_str: Option<String> = None;
         if let Some(device) = wifi_device {
             object_path_str = Some(device.to_string());
@@ -63,7 +65,6 @@ impl NetworkQuery {
     }
 
     async fn spawn_nm_proxy_listener(&self) -> anyhow::Result<()> {
-        use futures_util::stream::StreamExt;
         let inner = self.nm_proxy.inner();
         let props_proxy = PropertiesProxy::builder(&self.sys_bus)
             .destination(inner.destination().clone())?
