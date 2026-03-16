@@ -1,4 +1,4 @@
-// ./Models/ThemePalette.qml
+// ./Models/ThemePaletteModel.qml
 import QtQuick
 
 QtObject {
@@ -6,8 +6,7 @@ QtObject {
     required property string family
     required property string variant
     required property list<color> previewColors
-    // required property map<string, color> colors
-    required property list<ColorName> colors
+    required property list<ColorModel> colors
     required property bool isDark
 
     // Standard Interface

@@ -1,7 +1,15 @@
 module Components
 
+DialogButton 1.0 DialogButton.qml
 GlassCard 1.0 GlassCard.qml
+HexCopyField 1.0 HexCopyField.qml
 MaterialButton 1.0 MaterialButton.qml
+SidebarTabButton 1.0 SidebarTabButton.qml
+ThemeChip 1.0 ThemeChip.qml
 ThemeMenuCard 1.0 ThemeMenuCard.qml
 ThemeToggleButton 1.0 ThemeToggleButton.qml
 VariantChip 1.0 VariantChip.qml
+WallpaperCard 1.0 WallpaperCard.qml
+
+WallpaperHeader 1.0 WallpaperHeader.qml
+WallpaperPathDialog 1.0 WallpaperPathDialog.qml

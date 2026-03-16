@@ -259,7 +259,8 @@ return {
 					end, -- Called when a permission request is issued.
 				},
 				quick_chat = {
-					default_model = "opencode/big-pickle", -- works better with a fast model like gpt-4.1
+					-- default_model = "opencode/big-pickle", -- works better with a fast model like gpt-4.1
+					default_model = "github-copilot/gpt-4o",
 					default_agent = "build", -- plan ensure no file modifications by default
 					instructions = nil, -- Use built-in instructions if nil
 				},

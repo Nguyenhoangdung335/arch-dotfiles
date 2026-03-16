@@ -1,5 +1,3 @@
 module Models
-
-
-ColorName 1.0 ColorName.qml
-ThemePalette 1.0 ThemePalette.qml
+ColorModel 1.0 ColorModel.qml
+ThemePaletteModel 1.0 ThemePaletteModel.qml

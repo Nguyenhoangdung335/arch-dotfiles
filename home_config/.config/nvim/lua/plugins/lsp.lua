@@ -225,7 +225,7 @@ return {
 						)(fname) or vim.fn.getcwd()
 					end,
 				},
-				copilot = {},
+				-- copilot = {},
 			},
 		},
 		config = function(_, opts)

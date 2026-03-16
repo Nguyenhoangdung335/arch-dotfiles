@@ -1,4 +1,4 @@
-// ./Models/ColorName.qml
+// ./Models/ColorModel.qml
 import QtQuick 
 
 QtObject {

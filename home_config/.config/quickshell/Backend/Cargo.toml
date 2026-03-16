@@ -1,0 +1,16 @@
+[package]
+name = "Backend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.102"
+dirs = "6.0.0"
+futures = "0.3.32"
+notify = "8.2.0"
+notify-debouncer-mini = "0.7.0"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+tokio = { version = "1.50.0", features = ["full"] }
+toml = "1.0.6"
+zbus = "5.14.0"

@@ -8,6 +8,7 @@ Singleton {
     readonly property string defaultFamily: "Catppuccin"
     readonly property string defaultVariant: "Mocha"
     readonly property string defaultWallpaperDir: `${Quickshell.env("HOME")}/Pictures/Wallpapers`
+    readonly property var imageExtensions: ["jpg", "jpeg", "png", "webp", "gif", "bmp"]
     
     // Configuration properties (bound to JSON adapter)
     property string paletteFamily: defaultFamily
