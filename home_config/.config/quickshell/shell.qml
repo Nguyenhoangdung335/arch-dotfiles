@@ -4,6 +4,7 @@ import QtQuick
 // import "modules/bar"
 // import "modules/notifications"
 import "Modules/Sidebar"
+import "Modules/BackendTesterPanel"
 import "Services" as Svc
 
 ShellRoot {
@@ -11,6 +12,8 @@ ShellRoot {
     // Load Services on startup
     Component.onCompleted: {
         Svc.ThemeService.load();
+        Svc.BackendService.load();
     }
     Sidebar {}
+    BackendTesterPanel {}
 }
