@@ -1,5 +1,6 @@
 use futures::stream::StreamExt;
 use tokio::sync::watch::Sender;
+use tracing::{error, info};
 use zbus::fdo::PropertiesProxy;
 
 use crate::core::enums::NMDeviceType;
@@ -45,7 +46,7 @@ impl NetworkQuery {
                         break;
                     }
                 }
-                Err(e) => eprintln!("Failed to get device type: {:?}", e),
+                Err(e) => error!("Failed to get device type: {:?}", e),
             }
         }
 
@@ -87,12 +88,12 @@ impl NetworkQuery {
                                         });
                                     }
                                 }
-                                "ActiveConnection" => println!("ActiveConnection changed"),
+                                "ActiveConnection" => info!("ActiveConnection changed"),
                                 _ => {}
                             }
                         }
                     }
-                    Err(e) => eprintln!("Failed to get event args: {:?}", e),
+                    Err(e) => error!("Failed to get event args: {:?}", e),
                 }
             }
         });

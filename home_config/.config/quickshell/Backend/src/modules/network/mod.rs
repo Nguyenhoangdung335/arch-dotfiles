@@ -12,6 +12,7 @@ use self::state::{NetworkState, WifiAccessPoint, create_network_state};
 use futures::StreamExt;
 use futures::stream::FuturesUnordered;
 use tokio::sync::watch::{Receiver, Sender};
+use tracing::{error, info};
 
 pub struct NetworkModule {
     sys_bus: zbus::Connection,
@@ -46,7 +47,7 @@ impl NetworkModule {
 
         let wifi_device_object_path = self.query.get_wifi_device_object_path().await?;
         if wifi_device_object_path.is_none() {
-            eprintln!("No wifi device object path found");
+            error!("No wifi device object path found");
             return Ok(());
         }
         // Skipping on sending the device_object_path because
@@ -75,7 +76,7 @@ impl NetworkModule {
                             {
                                 Ok(proxy) => proxy,
                                 Err(e) => {
-                                    eprintln!("Skipping AP {}: {:?}", path, e);
+                                    error!("Skipping AP {}: {:?}", path, e);
                                     return None;
                                 }
                             };
@@ -123,34 +124,32 @@ impl NetworkModule {
     pub async fn handle_action(&self, action: &NetworkAction) {
         match action {
             NetworkAction::ToggleWifi => {
-                println!("Toggling wifi");
+                info!("Toggling wifi");
 
                 match self.command.toggle_wifi().await {
                     Ok(enabled) => {
-                        println!("Successfully toggled wifi to {}", enabled);
+                        info!("Successfully toggled wifi to {}", enabled);
                     }
-                    Err(e) => eprintln!("Failed to toggle wifi: {}", e),
+                    Err(e) => error!("Failed to toggle wifi: {}", e),
                 };
             }
             NetworkAction::ScanWifi => {
-                println!("Scanning for networks");
+                info!("Scanning for networks");
             }
             NetworkAction::Connect { ssid } => {
-                println!("Connecting to {}", ssid);
+                info!("Connecting to {}", ssid);
                 match self.command.activate_connection("", "", "").await {
-                    Ok(_) => {
-                        println!("Successfully connected to {}", ssid);
-                    }
-                    Err(e) => eprintln!("Failed to connect to {}: {}", ssid, e),
+                    Ok(_) => info!("Successfully connected to {}", ssid),
+                    Err(e) => error!("Failed to connect to {}: {}", ssid, e),
                 };
             }
             NetworkAction::GetWifiDeviceObjectPath => {
-                println!("Getting wifi device object path");
+                info!("Getting wifi device object path");
                 match self.query.get_wifi_device_object_path().await {
                     Ok(_) => {
-                        println!("Successfully got wifi device object path");
+                        info!("Successfully got wifi device object path");
                     }
-                    Err(e) => eprintln!("Failed to get wifi device object path: {}", e),
+                    Err(e) => error!("Failed to get wifi device object path: {}", e),
                 };
             }
         }

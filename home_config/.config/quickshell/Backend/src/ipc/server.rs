@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use tokio::net::UnixListener;
+use tracing::{error, info};
 
 use crate::app::AppContext;
 use crate::config;
@@ -15,13 +16,13 @@ pub async fn start(ctx: Arc<AppContext>) -> anyhow::Result<()> {
     }
     if socket_path.exists() {
         tokio::fs::remove_file(&socket_path).await.map_err(|e| {
-            eprintln!("Failed to remove old socket: {}", e);
+            error!("Failed to remove old socket: {}", e);
             e
         })?;
     }
     let listener = UnixListener::bind(&socket_path)?;
     set_socket_permissions(&socket_path)?;
-    println!("IPC server listening on {:?}", socket_path);
+    info!("IPC server listening on {:?}", socket_path);
 
     loop {
         match listener.accept().await {
@@ -30,12 +31,12 @@ pub async fn start(ctx: Arc<AppContext>) -> anyhow::Result<()> {
 
                 tokio::spawn(async move {
                     if let Err(e) = handler::handle_client(stream, ctx).await {
-                        eprintln!("IPC server error: {}", e);
+                        error!("IPC server error: {}", e);
                     }
                 });
             }
             Err(e) => {
-                eprintln!("IPC server error: {}", e);
+                error!("IPC server error: {}", e);
                 break;
             }
         }

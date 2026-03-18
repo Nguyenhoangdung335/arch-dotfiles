@@ -41,7 +41,7 @@ pub async fn handle_client(
             if let Ok(req) = serde_json::from_str::<ClientRequest>(&line) {
                 handle_request(&req, ctx.clone()).await;
             } else {
-                eprintln!("Failed to parse Quickshell request: {}", line);
+                tracing::error!("Failed to parse Quickshell request: {}", line);
             }
             line.clear();
         }
@@ -53,7 +53,7 @@ pub async fn handle_client(
             }
         }
 
-        // You can add more listeners here later:
+        // More modules can be added here
         // Ok(_) = bluetooth_rx.changed() => { ... }
         }
     }
