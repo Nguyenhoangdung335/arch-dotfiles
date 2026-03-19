@@ -1,5 +1,5 @@
 return {
-    {
+	--[[ {
         "Nguyenhoangdung335/nvim-keymap-finder",
         dependencies = {
             "nvim-telescope/telescope.nvim",
@@ -11,5 +11,5 @@ return {
         --     })
         --     vim.keymap.set("n", "<leader>km", "<cmd>Keymaps<cr>", { desc = "Keymaps" })
         -- end
-    }
+    } ]]
 }

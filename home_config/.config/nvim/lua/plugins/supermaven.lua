@@ -1,6 +1,7 @@
 return {
 	"supermaven-inc/supermaven-nvim",
 	dependencies = { "catppuccin" },
+	event = "InsertEnter",
 	opts = function()
 		local curr_theme = require("catppuccin.palettes.mocha")
 		return {
