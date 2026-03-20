@@ -14,6 +14,9 @@ pub struct WifiAccessPoint {
 pub struct NetworkState {
     pub wifi_access_points: Vec<WifiAccessPoint>,
     pub wireless_enabled: bool,
+    pub networking_enabled: bool,
+    pub state: u8,
+    pub connectivity: u8,
     pub active_connection: Option<WifiAccessPoint>,
     pub wifi_device_object_path: Option<String>,
 }
