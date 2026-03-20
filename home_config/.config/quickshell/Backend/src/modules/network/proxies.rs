@@ -10,9 +10,18 @@ use zbus::zvariant::{OwnedObjectPath, OwnedValue};
 )]
 pub trait NetworkManager {
     #[zbus(property)]
-    fn devices(&self) -> zbus::Result<Vec<OwnedObjectPath>>;
+    fn devices(&self) -> zbus::Result<Vec<OwnedObjectPath>>; // ao
     #[zbus(property)]
-    fn wireless_enabled(&self) -> zbus::Result<bool>;
+    fn networking_enabled(&self) -> zbus::Result<bool>; // b
+    #[zbus(property)]
+    fn wireless_enabled(&self) -> zbus::Result<bool>; // b
+    #[zbus(property)]
+    fn state(&self) -> zbus::Result<u32>; // u
+    #[zbus(property)]
+    fn connectivity(&self) -> zbus::Result<u32>; // u
+    #[zbus(property)]
+    fn active_connections(&self) -> zbus::Result<Vec<OwnedObjectPath>>; // ao
+
     #[zbus(property)]
     fn set_wireless_enabled(&self, enabled: bool) -> zbus::Result<()>;
 
@@ -37,11 +46,11 @@ pub trait NetworkManager {
 )]
 pub trait Device {
     #[zbus(property)]
-    fn device_type(&self) -> zbus::Result<u32>;
+    fn device_type(&self) -> zbus::Result<u32>; // u
     #[zbus(property)]
-    fn interface(&self) -> zbus::Result<String>;
+    fn interface(&self) -> zbus::Result<String>; // s
     #[zbus(property)]
-    fn active_connection(&self) -> zbus::Result<OwnedObjectPath>;
+    fn active_connection(&self) -> zbus::Result<OwnedObjectPath>; // o
 }
 
 #[proxy(
@@ -49,16 +58,11 @@ pub trait Device {
     interface = "org.freedesktop.NetworkManager.Device.Wireless"
 )]
 pub trait DeviceWireless {
+    #[zbus(property)]
+    fn active_access_point(&self) -> zbus::Result<OwnedObjectPath>; // o
+
     async fn get_all_access_points(&self) -> zbus::Result<Vec<OwnedObjectPath>>;
     async fn request_scan(&self, options: HashMap<String, OwnedValue>) -> zbus::Result<()>;
-}
-
-#[proxy(
-    default_service = "org.freedesktop.NetworkManager",
-    interface = "org.freedesktop.DBus.Properties"
-)]
-pub trait AccessPointProperties {
-    async fn get_all(&self, interface_name: String) -> zbus::Result<HashMap<String, OwnedValue>>;
 }
 
 #[proxy(
@@ -67,11 +71,21 @@ pub trait AccessPointProperties {
 )]
 pub trait AccessPoint {
     #[zbus(property)]
-    fn ssid(&self) -> zbus::Result<Vec<u8>>;
+    fn ssid(&self) -> zbus::Result<Vec<u8>>; // ay
     #[zbus(property)]
-    fn strength(&self) -> zbus::Result<u8>;
+    fn strength(&self) -> zbus::Result<u8>; // y
     #[zbus(property)]
-    fn hw_address(&self) -> zbus::Result<String>;
+    fn hw_address(&self) -> zbus::Result<String>; // s
+    #[zbus(property)]
+    fn frequency(&self) -> zbus::Result<u16>; // u
+    #[zbus(property)]
+    fn flags(&self) -> zbus::Result<u32>; // u
+    #[zbus(property)]
+    fn wpa_flags(&self) -> zbus::Result<u32>; // u
+    #[zbus(property)]
+    fn rsn_flags(&self) -> zbus::Result<u32>; // u
+    #[zbus(property)]
+    fn mode(&self) -> zbus::Result<u32>; // u
 }
 
 #[proxy(
@@ -80,7 +94,7 @@ pub trait AccessPoint {
 )]
 pub trait NMActiveConnection {
     #[zbus(property)]
-    fn connection(&self) -> zbus::Result<OwnedObjectPath>;
+    fn connection(&self) -> zbus::Result<OwnedObjectPath>; // o
 }
 
 #[proxy(
