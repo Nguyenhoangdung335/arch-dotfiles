@@ -13,14 +13,14 @@ pub struct WifiAccessPoint {
 #[derive(Clone, Debug, serde::Serialize, Default, PartialEq, Eq)]
 pub struct NetworkState {
     pub wifi_access_points: Vec<WifiAccessPoint>,
+    pub wireless_enabled: bool,
     pub active_connection: Option<WifiAccessPoint>,
-    pub is_wireless_enabled: bool,
     pub wifi_device_object_path: Option<String>,
 }
 
 impl NetworkState {
-    pub fn send_is_wireless_enabled_changed(&mut self, new_value: bool) -> bool {
-        update_if_changed(&mut self.is_wireless_enabled, new_value)
+    pub fn send_wireless_enabled_changed(&mut self, new_value: bool) -> bool {
+        update_if_changed(&mut self.wireless_enabled, new_value)
     }
 
     pub fn send_wifi_device_object_path_changed(&mut self, new_value: Option<String>) -> bool {
