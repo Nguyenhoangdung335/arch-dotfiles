@@ -14,4 +14,5 @@ serde_json = "1.0.149"
 tokio = { version = "1.50.0", features = ["full"] }
 toml = "1.0.6"
 tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
 zbus = "5.14.0"
