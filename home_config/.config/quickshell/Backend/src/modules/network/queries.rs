@@ -1,12 +1,11 @@
-use futures::stream::StreamExt;
 use tokio::sync::watch::Sender;
-use tracing::{error, info};
-use zbus::fdo::PropertiesProxy;
+use tracing::error;
 
-use crate::core::enums::NMDeviceType;
-
-use super::proxies::{DeviceProxy, NetworkManagerProxy};
-use super::state::NetworkState;
+use super::{
+    enums::NMDeviceType,
+    proxies::{DeviceProxy, NetworkManagerProxy},
+    state::NetworkState,
+};
 
 pub struct NetworkQuery {
     sys_bus: zbus::Connection,
@@ -26,7 +25,6 @@ impl NetworkQuery {
             nm_proxy,
             state_tx,
         };
-        new_query.spawn_nm_proxy_listener().await?;
         Ok(new_query)
     }
 
@@ -63,41 +61,5 @@ impl NetworkQuery {
 
     pub async fn is_wifi_enabled(&self) -> anyhow::Result<bool> {
         Ok(self.nm_proxy.wireless_enabled().await?)
-    }
-
-    async fn spawn_nm_proxy_listener(&self) -> anyhow::Result<()> {
-        let inner = self.nm_proxy.inner();
-        let props_proxy = PropertiesProxy::builder(&self.sys_bus)
-            .destination(inner.destination().clone())?
-            .path(inner.path().clone())?
-            .build()
-            .await?;
-        let mut props_stream = props_proxy.receive_properties_changed().await?;
-
-        let state_tx = self.state_tx.clone();
-        tokio::spawn(async move {
-            while let Some(changed_event) = props_stream.next().await {
-                match changed_event.args() {
-                    Ok(args) => {
-                        for (prop_name, value) in args.changed_properties() {
-                            match *prop_name {
-                                "WirelessEnabled" => {
-                                    if let Ok(enabled) = value.try_into() {
-                                        state_tx.send_if_modified(|state| {
-                                            state.send_is_wireless_enabled_changed(enabled)
-                                        });
-                                    }
-                                }
-                                "ActiveConnection" => info!("ActiveConnection changed"),
-                                _ => {}
-                            }
-                        }
-                    }
-                    Err(e) => error!("Failed to get event args: {:?}", e),
-                }
-            }
-        });
-
-        Ok(())
     }
 }

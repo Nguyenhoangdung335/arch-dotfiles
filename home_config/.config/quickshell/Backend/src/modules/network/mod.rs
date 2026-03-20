@@ -1,11 +1,14 @@
 pub mod action;
 pub mod commands;
+pub mod enums;
+pub mod events;
 pub mod proxies;
 pub mod queries;
 pub mod state;
 
 use self::action::NetworkAction;
 use self::commands::NetworkCommand;
+use self::events::NetworkEvent;
 use self::proxies::{AccessPointProxy, DeviceWirelessProxy};
 use self::queries::NetworkQuery;
 use self::state::{NetworkState, WifiAccessPoint, create_network_state};
@@ -18,6 +21,7 @@ pub struct NetworkModule {
     sys_bus: zbus::Connection,
     pub query: NetworkQuery,
     pub command: NetworkCommand,
+    pub event: NetworkEvent,
     pub state_rx: Receiver<NetworkState>,
     pub state_tx: Sender<NetworkState>,
 }
@@ -25,13 +29,17 @@ pub struct NetworkModule {
 impl NetworkModule {
     pub async fn new(sys_bus: &zbus::Connection) -> anyhow::Result<Self> {
         let (state_tx, state_rx) = create_network_state();
-        let query = NetworkQuery::new(sys_bus, state_tx.clone()).await?;
-        let command = NetworkCommand::new(sys_bus, state_rx.clone()).await?;
+        let (query, command, event) = tokio::try_join!(
+            NetworkQuery::new(sys_bus, state_tx.clone()),
+            NetworkCommand::new(sys_bus, state_rx.clone()),
+            NetworkEvent::new(sys_bus, state_tx.clone(), cancel_token.child_token()),
+        )?;
 
         let module = Self {
             sys_bus: sys_bus.clone(),
             query,
             command,
+            event,
             state_rx,
             state_tx,
         };
