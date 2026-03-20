@@ -25,18 +25,32 @@ pub async fn start(ctx: Arc<AppContext>) -> anyhow::Result<()> {
     info!("IPC server listening on {:?}", socket_path);
 
     loop {
-        match listener.accept().await {
-            Ok((stream, _addr)) => {
-                let ctx = ctx.clone();
+        tokio::select! {
+            result = listener.accept() => {
+                match result {
+                    Ok((stream, _addr)) => {
+                        let ctx = ctx.clone();
 
-                tokio::spawn(async move {
-                    if let Err(e) = handler::handle_client(stream, ctx).await {
-                        error!("IPC server error: {}", e);
+                        tokio::spawn(async move {
+                            if let Err(e) = handler::handle_client(stream, ctx).await {
+                                error!("IPC server error: {}", e);
+                            }
+                        });
                     }
-                });
-            }
-            Err(e) => {
-                error!("IPC server error: {}", e);
+                    Err(e) => {
+                        error!("IPC server error: {}", e);
+                        break;
+                    }
+                }
+            },
+            _ = ctx.cancel_token.cancelled() => {
+                info!("Shutdown signal received, exiting IPC server...");
+                if socket_path.exists() {
+                    tokio::fs::remove_file(&socket_path).await.map_err(|e| {
+                        error!("Failed to remove old socket: {}", e);
+                        e
+                    })?;
+                }
                 break;
             }
         }

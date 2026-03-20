@@ -15,10 +15,12 @@ use self::state::{NetworkState, WifiAccessPoint, create_network_state};
 use futures::StreamExt;
 use futures::stream::FuturesUnordered;
 use tokio::sync::watch::{Receiver, Sender};
+use tokio_util::sync::CancellationToken;
 use tracing::{error, info};
 
 pub struct NetworkModule {
     sys_bus: zbus::Connection,
+    _cancel_token: CancellationToken,
     pub query: NetworkQuery,
     pub command: NetworkCommand,
     pub event: NetworkEvent,
@@ -27,7 +29,10 @@ pub struct NetworkModule {
 }
 
 impl NetworkModule {
-    pub async fn new(sys_bus: &zbus::Connection) -> anyhow::Result<Self> {
+    pub async fn new(
+        sys_bus: &zbus::Connection,
+        cancel_token: CancellationToken,
+    ) -> anyhow::Result<Self> {
         let (state_tx, state_rx) = create_network_state();
         let (query, command, event) = tokio::try_join!(
             NetworkQuery::new(sys_bus, state_tx.clone()),
@@ -42,6 +47,7 @@ impl NetworkModule {
             event,
             state_rx,
             state_tx,
+            _cancel_token: cancel_token,
         };
         module.sync_current_state().await?;
 
@@ -51,7 +57,7 @@ impl NetworkModule {
     pub async fn sync_current_state(&self) -> anyhow::Result<()> {
         let is_wifi_enabled = self.query.is_wifi_enabled().await?;
         self.state_tx
-            .send_if_modified(|state| state.send_is_wireless_enabled_changed(is_wifi_enabled));
+            .send_if_modified(|state| state.send_wireless_enabled_changed(is_wifi_enabled));
 
         let wifi_device_object_path = self.query.get_wifi_device_object_path().await?;
         if wifi_device_object_path.is_none() {
