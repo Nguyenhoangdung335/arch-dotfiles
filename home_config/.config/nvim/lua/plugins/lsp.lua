@@ -6,6 +6,7 @@ return {
 			"mason-org/mason-lspconfig.nvim",
 			"nvimdev/lspsaga.nvim",
 		},
+		event = "BufReadPre",
 		opts = {
 			servers = {
 				yamlls = {
@@ -335,6 +336,7 @@ return {
 			"nvim-treesitter/nvim-treesitter",
 			"nvim-tree/nvim-web-devicons",
 		},
+		event = "VeryLazy",
 		opts = {
 			ui = {
 				border = "rounded",

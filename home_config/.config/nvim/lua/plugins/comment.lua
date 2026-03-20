@@ -4,6 +4,7 @@ return {
 		dependencies = {
 			{ "JoosepAlviste/nvim-ts-context-commentstring", opts = { enable_autocmd = false } },
 		},
+		event = "VeryLazy",
 		opts = {
 			padding = true,
 			sticky = true,

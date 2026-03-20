@@ -137,11 +137,13 @@ return {
 						["<M-p>"] = require("telescope.actions.layout").toggle_preview,
 						["<Esc>"] = require("telescope.actions").close,
 						["<Tab>"] = focus_preview,
+						["<leader>dd"] = require("telescope.actions").delete_buffer,
 					},
 					i = {
 						["<M-p>"] = require("telescope.actions.layout").toggle_preview,
 						["<Esc>"] = require("telescope.actions").close,
 						["<Tab>"] = focus_preview,
+						["<leader>dd"] = require("telescope.actions").delete_buffer,
 					},
 				},
 				layout_strategy = "horizontal", -- important

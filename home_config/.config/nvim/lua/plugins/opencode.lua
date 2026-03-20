@@ -19,6 +19,8 @@ return {
 			"nvim-telescope/telescope.nvim",
 			"folke/snacks.nvim",
 		},
+		event = "VeryLazy",
+		cmd = "Opencode",
 		config = function()
 			-- Default configuration with all available options
 			require("opencode").setup({
@@ -138,7 +140,7 @@ return {
 							wrap = true, -- Wraps text inside input window
 						},
 						-- Auto-hide input window when prompt is submitted or focus switches to output window
-						auto_hide = false,
+						auto_hide = true,
 					},
 					picker = {
 						snacks_layout = nil, -- `layout` opts to pass to Snacks.picker.pick({ layout = ... })

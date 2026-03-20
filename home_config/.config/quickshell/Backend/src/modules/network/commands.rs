@@ -43,7 +43,7 @@ impl NetworkCommand {
     pub async fn toggle_wifi(&self) -> anyhow::Result<bool> {
         let currently_enabled = {
             let state = self._state_rx.borrow();
-            state.is_wireless_enabled
+            state.wireless_enabled
         };
 
         self.nm_proxy

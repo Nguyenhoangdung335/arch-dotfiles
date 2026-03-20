@@ -8,6 +8,7 @@ use notify_debouncer_mini::Debouncer;
 use tokio::fs::{self, read_to_string};
 use tokio::sync::RwLock;
 use tokio::sync::mpsc::channel;
+use tracing::{error, info};
 
 use crate::core::config;
 
@@ -42,7 +43,7 @@ pub async fn load_or_create_config() -> anyhow::Result<config::Config> {
             let default_cfg = config::Config::default();
             let toml = toml::to_string_pretty(&default_cfg)?;
             tokio::fs::write(&path, toml).await?;
-            println!(
+            error!(
                 "config file not found, created default config file at {:?}",
                 path
             );
@@ -91,14 +92,14 @@ pub async fn watch_config(
                                 let mut current_cfg = config.write().await;
                                 if *current_cfg != cfg {
                                     *current_cfg = cfg;
-                                    println!("config reloaded");
+                                    info!("config reloaded");
                                 }
                             }
-                            Err(e) => eprintln!("config error: {:?}", e),
+                            Err(e) => error!("config error: {:?}", e),
                         }
                     }
                 }
-                Err(e) => eprintln!("watch error: {:?}", e),
+                Err(e) => error!("watch error: {:?}", e),
             }
         }
     });

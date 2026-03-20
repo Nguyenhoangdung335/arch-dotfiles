@@ -1,36 +1,53 @@
 pub mod action;
 pub mod commands;
+pub mod enums;
+pub mod events;
 pub mod proxies;
 pub mod queries;
 pub mod state;
 
 use self::action::NetworkAction;
 use self::commands::NetworkCommand;
+use self::events::NetworkEvent;
 use self::proxies::{AccessPointProxy, DeviceWirelessProxy};
 use self::queries::NetworkQuery;
 use self::state::{NetworkState, WifiAccessPoint, create_network_state};
+use futures::StreamExt;
+use futures::stream::FuturesUnordered;
 use tokio::sync::watch::{Receiver, Sender};
+use tokio_util::sync::CancellationToken;
+use tracing::{error, info};
 
 pub struct NetworkModule {
     sys_bus: zbus::Connection,
+    _cancel_token: CancellationToken,
     pub query: NetworkQuery,
     pub command: NetworkCommand,
+    pub event: NetworkEvent,
     pub state_rx: Receiver<NetworkState>,
     pub state_tx: Sender<NetworkState>,
 }
 
 impl NetworkModule {
-    pub async fn new(sys_bus: &zbus::Connection) -> anyhow::Result<Self> {
+    pub async fn new(
+        sys_bus: &zbus::Connection,
+        cancel_token: CancellationToken,
+    ) -> anyhow::Result<Self> {
         let (state_tx, state_rx) = create_network_state();
-        let query = NetworkQuery::new(sys_bus, state_tx.clone()).await?;
-        let command = NetworkCommand::new(sys_bus, state_rx.clone()).await?;
+        let (query, command, event) = tokio::try_join!(
+            NetworkQuery::new(sys_bus, state_tx.clone()),
+            NetworkCommand::new(sys_bus, state_rx.clone()),
+            NetworkEvent::new(sys_bus, state_tx.clone(), cancel_token.child_token()),
+        )?;
 
         let module = Self {
             sys_bus: sys_bus.clone(),
             query,
             command,
+            event,
             state_rx,
             state_tx,
+            _cancel_token: cancel_token,
         };
         module.sync_current_state().await?;
 
@@ -40,16 +57,15 @@ impl NetworkModule {
     pub async fn sync_current_state(&self) -> anyhow::Result<()> {
         let is_wifi_enabled = self.query.is_wifi_enabled().await?;
         self.state_tx
-            .send_if_modified(|state| state.send_is_wireless_enabled_changed(is_wifi_enabled));
+            .send_if_modified(|state| state.send_wireless_enabled_changed(is_wifi_enabled));
 
         let wifi_device_object_path = self.query.get_wifi_device_object_path().await?;
         if wifi_device_object_path.is_none() {
-            eprintln!("No wifi device object path found");
+            error!("No wifi device object path found");
             return Ok(());
         }
-        self.state_tx.send_if_modified(|state| {
-            state.send_wifi_device_object_path_changed(wifi_device_object_path.clone())
-        });
+        // Skipping on sending the device_object_path because
+        // it is already sent inside query method already.
 
         let sys_bus = self.sys_bus.clone();
         let state_tx = self.state_tx.clone();
@@ -61,44 +77,60 @@ impl NetworkModule {
                 .build()
                 .await
             {
-                let mut aps: Vec<WifiAccessPoint> = Vec::new();
+                let mut futures_tasks = FuturesUnordered::new();
                 if let Ok(object_paths) = wifi_access_points.get_all_access_points().await {
                     for path in object_paths {
-                        let ap_proxy = AccessPointProxy::builder(&sys_bus)
-                            .path(path.clone())
-                            .unwrap()
-                            .build()
-                            .await
-                            .unwrap();
-                        let ssid = ap_proxy.ssid().await.unwrap();
-                        let strength = ap_proxy.strength().await.unwrap();
-                        aps.push(WifiAccessPoint {
-                            ssid: String::from_utf8_lossy(&ssid).to_string(),
-                            strength,
-                            object_path: path.to_string(),
+                        let sys_bus = sys_bus.clone();
+                        futures_tasks.push(async move {
+                            let ap_proxy = match AccessPointProxy::builder(&sys_bus)
+                                .path(path.clone())
+                                .unwrap()
+                                .build()
+                                .await
+                            {
+                                Ok(proxy) => proxy,
+                                Err(e) => {
+                                    error!("Skipping AP {}: {:?}", path, e);
+                                    return None;
+                                }
+                            };
+
+                            let (ssid_res, strength_res, hw_address_res) = tokio::join!(
+                                ap_proxy.ssid(),
+                                ap_proxy.strength(),
+                                ap_proxy.hw_address()
+                            );
+                            let (ssid, strength, hw_address) =
+                                match (ssid_res, strength_res, hw_address_res) {
+                                    (Ok(ssid), Ok(strength), Ok(hw_address)) => {
+                                        if ssid.is_empty() {
+                                            return None;
+                                        }
+                                        (ssid, strength, hw_address)
+                                    }
+                                    _ => return None,
+                                };
+
+                            Some(WifiAccessPoint {
+                                ssid: String::from_utf8_lossy(&ssid).to_string(),
+                                strength,
+                                hw_address,
+                                object_path: path.to_string(),
+                            })
                         });
                     }
-                }
 
-                state_tx.send_if_modified(|state| state.send_wifi_access_points_changed(Some(aps)));
+                    let mut aps: Vec<WifiAccessPoint> = Vec::new();
+                    while let Some(result) = futures_tasks.next().await {
+                        if let Some(ap) = result {
+                            aps.push(ap);
+                        }
+                    }
+
+                    state_tx.send_if_modified(|state| state.send_wifi_access_points_changed(aps));
+                }
             }
         });
-
-        // TODO: Comment logic for now, intended to spawn some kind of async task
-        // or thread to get wifi access points object paths and get properties of
-        // each access point
-
-        /* let wifi_device_proxy = DeviceWirelessProxy::builder(&self.sys_bus)
-            .path(wifi_device_object_path.unwrap())?
-            .build()
-            .await?;
-
-        let access_points = wifi_device_proxy.get_all_access_points().await?;
-        state.wifi_access_points = {
-            let access_points: Vec<String> =
-                access_points.iter().map(|ap| ap.to_string()).collect();
-            Some(access_points)
-        }; */
 
         Ok(())
     }
@@ -106,34 +138,32 @@ impl NetworkModule {
     pub async fn handle_action(&self, action: &NetworkAction) {
         match action {
             NetworkAction::ToggleWifi => {
-                println!("Toggling wifi");
+                info!("Toggling wifi");
 
                 match self.command.toggle_wifi().await {
                     Ok(enabled) => {
-                        println!("Successfully toggled wifi to {}", enabled);
+                        info!("Successfully toggled wifi to {}", enabled);
                     }
-                    Err(e) => eprintln!("Failed to toggle wifi: {}", e),
+                    Err(e) => error!("Failed to toggle wifi: {}", e),
                 };
             }
             NetworkAction::ScanWifi => {
-                println!("Scanning for networks");
+                info!("Scanning for networks");
             }
             NetworkAction::Connect { ssid } => {
-                println!("Connecting to {}", ssid);
+                info!("Connecting to {}", ssid);
                 match self.command.activate_connection("", "", "").await {
-                    Ok(_) => {
-                        println!("Successfully connected to {}", ssid);
-                    }
-                    Err(e) => eprintln!("Failed to connect to {}: {}", ssid, e),
+                    Ok(_) => info!("Successfully connected to {}", ssid),
+                    Err(e) => error!("Failed to connect to {}: {}", ssid, e),
                 };
             }
             NetworkAction::GetWifiDeviceObjectPath => {
-                println!("Getting wifi device object path");
+                info!("Getting wifi device object path");
                 match self.query.get_wifi_device_object_path().await {
                     Ok(_) => {
-                        println!("Successfully got wifi device object path");
+                        info!("Successfully got wifi device object path");
                     }
-                    Err(e) => eprintln!("Failed to get wifi device object path: {}", e),
+                    Err(e) => error!("Failed to get wifi device object path: {}", e),
                 };
             }
         }
