@@ -1,3 +1,9 @@
+local disabled_filetypes = {
+	markdown = true,
+	help = true,
+	txt = true,
+}
+
 return {
 	"folke/sidekick.nvim",
 	name = "sidekick",
@@ -6,7 +12,13 @@ return {
 		-- add any options here
 		nes = {
 			-- enabled = vim.g.sidekick_nes ~= false and vim.b.sidekick_nes ~= false,
-			enabled = true,
+			enabled = function()
+				if disabled_filetypes[vim.bo.filetype] then
+					vim.notify("Sidekick is disabled for this file type (" .. vim.bo.filetype .. ")")
+					return false
+				end
+				return true
+			end,
 			debounce = 100,
 			trigger = {
 				events = { "CursorHoldI", "User SidekickNesDone" },
