@@ -7,7 +7,6 @@
  * @param {string} message - The message to log
  * @param {any[]} optionalParams - Optional parameters to include in the log message
  */
-
 function log(level, message, ...optionalParams) {
   switch (level) {
     case "INFO":
@@ -40,7 +39,11 @@ function info(message, ...optionalParams) {
       jsonParams[i] = JSON.stringify(optionalParams[i]);
     }
   }
-  console.log("[INFO]", message, ...jsonParams);
+  console.info(
+    "[" + new Date().toISOString() + "] - [INFO]",
+    message,
+    ...jsonParams,
+  );
 }
 
 /**
@@ -58,8 +61,11 @@ function warn(message, ...optionalParams) {
       optionalParams[i] = JSON.stringify(optionalParams[i]);
     }
   }
-
-  console.warn("[WARNING]", message, ...optionalParams);
+  console.warn(
+    "[" + new Date().toISOString() + "] - [WARNING]",
+    message,
+    ...optionalParams,
+  );
 }
 
 /**
@@ -78,5 +84,9 @@ function error(message, ...optionalParams) {
     }
   }
 
-  console.error("[ERROR]", message, ...optionalParams);
+  console.error(
+    "[" + new Date().toISOString() + "] - [ERROR]",
+    message,
+    ...optionalParams,
+  );
 }
