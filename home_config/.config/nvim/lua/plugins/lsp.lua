@@ -6,7 +6,7 @@ return {
 			"mason-org/mason-lspconfig.nvim",
 			"nvimdev/lspsaga.nvim",
 		},
-		event = "BufReadPre",
+		event = "VeryLazy",
 		opts = {
 			servers = {
 				yamlls = {
