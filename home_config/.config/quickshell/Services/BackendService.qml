@@ -46,8 +46,6 @@ Singleton {
                     root.isRetrying = false;
                     root.retryCount = 0;
                 } else if (!root.isRetrying) {
-                    // Only enter the retry loop for unexpected disconnects.
-                    // Mid-retry socket teardowns are intentional and must not re-enter.
                     Log.warn("BackendService: Unexpectedly disconnected. Starting retry sequence...");
                     root.startRetrying();
                 }
@@ -90,11 +88,9 @@ Singleton {
         repeat: false
         running: false
         onTriggered: {
-            socketLoader.active = true;
-            // Schedule next attempt optimistically. onConnectionStateChanged cancels
-            // this timer on success via reconnectTimer.stop().
             reconnectTimer.interval = root.currentRetryInterval;
             reconnectTimer.start();
+            socketLoader.active = true;
         }
     }
 
