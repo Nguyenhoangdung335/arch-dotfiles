@@ -11,8 +11,8 @@ return {
 				opts = {
 					controls = { enabled = true },
 					mappings = {
-						expand = { "<Tab>", "<2-LeftMouse>" },
-						open = "<CR>",
+						expand = { "<CR>", "<2-LeftMouse>" },
+						open = "o",
 						remove = "d",
 						edit = "e",
 						repl = "r",
