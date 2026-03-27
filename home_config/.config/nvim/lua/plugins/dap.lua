@@ -96,17 +96,6 @@ return {
 					},
 				},
 			},
-			-- Persistent Breakpoints
-			{
-				"Weissle/persistent-breakpoints.nvim",
-				opts = {
-					load_breakpoints_event = { "BufReadPost", "BufNewFile" },
-					always_reload = true,
-				},
-				config = function(_, opts)
-					require("persistent-breakpoints").setup(opts)
-				end,
-			},
 		},
 		keys = {
 			{
@@ -143,24 +132,6 @@ return {
 					require("dap").step_out()
 				end,
 				desc = "DAP Step Out",
-			},
-			{
-				"<leader>bb",
-				function()
-					require("persistent-breakpoints.api").toggle_breakpoint()
-				end,
-				desc = "Toggle Breakpoint",
-				mode = "n",
-				noremap = true,
-			},
-			{
-				"<leader>bc",
-				function()
-					require("persistent-breakpoints.api").clear_all_breakpoints()
-				end,
-				desc = "Clear Breakpoints",
-				mode = "n",
-				noremap = true,
 			},
 			{
 				"<leader>gb",
@@ -247,5 +218,37 @@ return {
 				},
 			}
 		end,
+	},
+	-- Persistent Breakpoints
+	{
+		"Weissle/persistent-breakpoints.nvim",
+		event = { "BufReadPost", "BufNewFile" },
+		opts = {
+			load_breakpoints_event = { "BufReadPost", "BufNewFile" },
+			always_reload = true,
+		},
+		config = function(_, opts)
+			require("persistent-breakpoints").setup(opts)
+		end,
+		keys = {
+			{
+				"<leader>bb",
+				function()
+					require("persistent-breakpoints.api").toggle_breakpoint()
+				end,
+				desc = "Toggle Breakpoint",
+				mode = "n",
+				noremap = true,
+			},
+			{
+				"<leader>bc",
+				function()
+					require("persistent-breakpoints.api").clear_all_breakpoints()
+				end,
+				desc = "Clear Breakpoints",
+				mode = "n",
+				noremap = true,
+			},
+		},
 	},
 }
