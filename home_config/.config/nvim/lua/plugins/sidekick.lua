@@ -17,7 +17,7 @@ return {
 					vim.notify("Sidekick is disabled for this file type (" .. vim.bo.filetype .. ")")
 					return false
 				end
-				return true
+				return vim.g.sidekick_nes ~= false and vim.b.sidekick_nes ~= false
 			end,
 			debounce = 100,
 			trigger = {
