@@ -215,6 +215,12 @@ return {
 					end,
 					cwd = "${workspaceFolder}",
 					stopOnEntry = false,
+					env = function()
+						local variables = vim.fn.environ()
+						-- default to debug logging
+						variables["RUST_LOG"] = "debug"
+						return variables
+					end,
 				},
 			}
 		end,
