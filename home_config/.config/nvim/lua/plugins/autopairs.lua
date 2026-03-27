@@ -84,6 +84,58 @@ return {
 						return opts.char == ">" and opts.next_char == ">"
 					end),
 			})
+
+			-- Add rule for automatically creating a closing comment for 'region'
+			npairs.add_rules({
+				Rule("region", ""):with_pair(function(opts)
+					local cs = vim.bo.commentstring or ""
+					local prefix = cs:match("^(.-)%s*%%s") or cs:match("^([^%s%%]+)") or ""
+					if prefix == "" then
+						return false
+					end
+
+					-- Escape Lua magic characters for pattern matching
+					local escaped = prefix:gsub("[%-%^%$%(%)%%%.%[%]%*%+%-%%%?]", "%%%1")
+
+					-- Only trigger if the text before cursor starts with comment prefix and ends with 'regio'
+					local text_before_cursor = opts.line:sub(1, opts.col)
+					if not text_before_cursor:match("^%s*" .. escaped .. ".*regio$") then
+						return false
+					end
+
+					-- We manually insert the closing tag to bypass Neovim's auto-comment formatting
+					-- which would otherwise duplicate the comment prefixes on the new lines.
+					local suffix = cs:match("%%s%s*(.-)$") or ""
+					local end_text = prefix .. " endregion"
+					if suffix ~= "" then
+						end_text = end_text .. " " .. suffix
+					end
+
+					local indent = opts.line:match("^(%s*)") or ""
+
+					-- Insert the empty indented line and the closing tag line below the current line
+					-- Use vim.schedule to avoid E565: Not allowed to change text
+					vim.schedule(function()
+						local r, c = unpack(vim.api.nvim_win_get_cursor(0))
+						
+						-- Append ': ' right after 'region'
+						vim.api.nvim_buf_set_text(0, r - 1, c, r - 1, c, { ": " })
+						
+						-- Insert the blank line and closing tag below
+						vim.api.nvim_buf_set_lines(0, r, r, false, {
+							indent,
+							indent .. end_text,
+						})
+						
+						-- Move the cursor forward so it's placed right after the newly inserted ': '
+						vim.api.nvim_win_set_cursor(0, { r, c + 2 })
+					end)
+
+					-- Return false so Autopairs doesn't insert any pairs itself,
+					-- allowing the final 'n' to be inserted naturally.
+					return false
+				end),
+			})
 		end,
 		keys = {
 			{
