@@ -81,7 +81,7 @@ return {
 					:with_pair(cond.before_regex("[%a_:]"))
 					:with_pair(cond.not_after_regex("[%w%(%[%{%<]"))
 					:with_move(function(opts)
-						return opts.next_char == ">"
+						return opts.char == ">" and opts.next_char == ">"
 					end),
 			})
 		end,
