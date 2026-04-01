@@ -22,7 +22,7 @@ Item {
 
     function setWallpaper(path: string) {
         Quickshell.execDetached([
-            "swww",
+            "awww",
             "img", path,
             "--transition-type", "any",
             "--transition-step", "90",
