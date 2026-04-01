@@ -1,5 +1,8 @@
 local disabled_filetypes = {
 	markdown = true,
+	json = true,
+	toml = true,
+	yaml = true,
 	help = true,
 	txt = true,
 }
