@@ -5,3 +5,8 @@ home_config/.config/nvim/specs
 .git
 home_config/.config/quickshell/Backend/target/
 home_config/.config/quickshell/theme.json
+
+home_config/.config/opencode/node_modules
+home_config/.config/opencode/package.json
+home_config/.config/opencode/bun.lock
+home_config/.config/opencode/.gitignore
