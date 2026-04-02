@@ -1,30 +1,22 @@
 import QtQuick
-import QtQuick.Effects
 
-// Generic glassmorphism card component
+import "../Themes" as Th
+
+// Generic glass-style card component
 Rectangle {
     id: root
-    
+
     // Public API
     property real glassOpacity: 0.75
-    property real blurRadius: 32
     property real borderOpacity: 0.3
     property int elevation: 2
-    
+
     // Default styling
-    color: Qt.rgba(0, 0, 0, glassOpacity)
+    color: Qt.rgba(Th.Theme.bg.r, Th.Theme.bg.g, Th.Theme.bg.b, glassOpacity)
     radius: 16
     border.width: 1
-    border.color: Qt.rgba(1, 1, 1, borderOpacity)
-    
-    // Backdrop blur effect (if supported)
-    layer.enabled: true
-    layer.effect: MultiEffect {
-        blurEnabled: true
-        blur: 0.4
-        saturation: 0.2
-    }
-    
+    border.color: Qt.rgba(Th.Theme.fg.r, Th.Theme.fg.g, Th.Theme.fg.b, borderOpacity)
+
     // Drop shadow for elevation
     Rectangle {
         anchors.fill: parent
@@ -33,7 +25,7 @@ Rectangle {
         radius: parent.radius
         color: "#000000"
         opacity: 0.15 * elevation
-        
+
         Behavior on opacity { NumberAnimation { duration: 200 } }
     }
 }

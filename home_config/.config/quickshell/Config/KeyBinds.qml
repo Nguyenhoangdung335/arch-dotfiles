@@ -7,6 +7,7 @@ QtObject {
     // Global IPC Shortcuts (quickshell dbus names)
     property string toggleConnectionGraph: "toggleConnectionGraph"
     property string toggleSidebar: "toggleSidebar"
+    property string toggleBackendTester: "toggleBackendTester"
     
     // Sidebar Local Keybinds (Qt.Sequence)
     property string sidebarNextTab: "Ctrl+Tab"

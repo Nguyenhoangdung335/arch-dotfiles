@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Effects
 
+import "../Themes" as Th
+
 // Material Design button with ripple effect
 Rectangle {
     id: root
@@ -10,7 +12,7 @@ Rectangle {
     property string iconSource: ""
     property bool filled: true
     property bool elevated: false
-    property color buttonColor: "#6750A4"
+    property color buttonColor: Th.Theme.primary
     property color textColor: "#FFFFFF"
     signal clicked()
     
