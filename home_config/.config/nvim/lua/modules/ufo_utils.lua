@@ -83,6 +83,12 @@ M.provider_selector = function(_, filetype, _)
 				local final_folds = folds or {}
 				-- Append our custom and manual folds to whichever provider succeeded
 				vim.list_extend(final_folds, all_custom)
+				-- Auto-close region folds after insertion
+				if #all_custom > 0 then
+					vim.defer_fn(function()
+						require("ufo").closeFoldsWith(nil, all_custom)
+					end, 0)
+				end
 				return final_folds
 			end)
 	end
@@ -192,4 +198,3 @@ M.get_opts = function()
 end
 
 return M
-
