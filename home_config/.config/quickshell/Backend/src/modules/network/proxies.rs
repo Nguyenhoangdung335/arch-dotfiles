@@ -44,7 +44,7 @@ pub trait NetworkManager {
     default_service = "org.freedesktop.NetworkManager",
     interface = "org.freedesktop.NetworkManager.Device"
 )]
-pub trait Device {
+pub trait NMDevice {
     #[zbus(property)]
     fn device_type(&self) -> zbus::Result<u32>; // u
     #[zbus(property)]
@@ -57,7 +57,7 @@ pub trait Device {
     default_service = "org.freedesktop.NetworkManager",
     interface = "org.freedesktop.NetworkManager.Device.Wireless"
 )]
-pub trait DeviceWireless {
+pub trait NMDeviceWireless {
     #[zbus(property)]
     fn active_access_point(&self) -> zbus::Result<OwnedObjectPath>; // o
 
@@ -69,7 +69,7 @@ pub trait DeviceWireless {
     default_service = "org.freedesktop.NetworkManager",
     interface = "org.freedesktop.NetworkManager.AccessPoint"
 )]
-pub trait AccessPoint {
+pub trait NMAccessPoint {
     #[zbus(property)]
     fn ssid(&self) -> zbus::Result<Vec<u8>>; // ay
     #[zbus(property)]
@@ -90,6 +90,14 @@ pub trait AccessPoint {
 
 #[proxy(
     default_service = "org.freedesktop.NetworkManager",
+    interface = "org.freedesktop.DBus.Properties"
+)]
+pub trait NMAccessPointProperties {
+    async fn get_all(&self, interface_name: &str) -> zbus::Result<HashMap<String, OwnedValue>>;
+}
+
+#[proxy(
+    default_service = "org.freedesktop.NetworkManager",
     interface = "org.freedesktop.NetworkManager.Connection.Active"
 )]
 pub trait NMActiveConnection {
@@ -99,8 +107,12 @@ pub trait NMActiveConnection {
 
 #[proxy(
     default_service = "org.freedesktop.NetworkManager",
-    interface = "org.freedesktop.NetworkManager.Settings.Connection"
+    default_path = "/org/freedesktop/NetworkManager/Settings",
+    interface = "org.freedesktop.NetworkManager.Settings"
 )]
-pub trait NMConnectionSetting {
-    async fn get_settings(&self) -> zbus::Result<HashMap<String, HashMap<String, OwnedValue>>>;
+pub trait NMSettings {
+    #[zbus(property)]
+    fn connections(&self) -> zbus::Result<Vec<OwnedObjectPath>>; // ao
+    #[zbus(property)]
+    fn hostname(&self) -> zbus::Result<String>; // s
 }

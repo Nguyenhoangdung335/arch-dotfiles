@@ -1,13 +1,15 @@
+use std::collections::HashMap;
+
 use tokio::sync::watch::Receiver;
 use zbus::zvariant::OwnedObjectPath;
 
-use super::proxies::NetworkManagerProxy;
+use super::proxies::{NMDeviceWirelessProxy, NetworkManagerProxy};
 use super::state::NetworkState;
 
 pub struct NetworkCommand {
-    _sys_bus: zbus::Connection,
+    sys_bus: zbus::Connection,
     nm_proxy: NetworkManagerProxy<'static>,
-    _state_rx: Receiver<NetworkState>,
+    state_rx: Receiver<NetworkState>,
 }
 
 impl NetworkCommand {
@@ -17,9 +19,9 @@ impl NetworkCommand {
     ) -> anyhow::Result<Self> {
         let nm_proxy = NetworkManagerProxy::new(sys_bus).await?;
         Ok(Self {
-            _sys_bus: sys_bus.clone(),
+            sys_bus: sys_bus.clone(),
             nm_proxy,
-            _state_rx: state_rx,
+            state_rx,
         })
     }
 
@@ -42,7 +44,7 @@ impl NetworkCommand {
 
     pub async fn toggle_wifi(&self) -> anyhow::Result<bool> {
         let currently_enabled = {
-            let state = self._state_rx.borrow();
+            let state = self.state_rx.borrow();
             state.wireless_enabled
         };
 
@@ -50,5 +52,22 @@ impl NetworkCommand {
             .set_wireless_enabled(!currently_enabled)
             .await?;
         Ok(!currently_enabled)
+    }
+
+    pub async fn request_scan(&self) -> anyhow::Result<()> {
+        let wifi_device_object_path = {
+            let state_rx = self.state_rx.borrow();
+            match state_rx.wifi_device_object_path.clone() {
+                Some(path) => path,
+                None => return Err(anyhow::anyhow!("No wifi device object path found")),
+            }
+        };
+
+        let wifi_device_proxy = NMDeviceWirelessProxy::builder(&self.sys_bus)
+            .path(wifi_device_object_path)?
+            .build()
+            .await?;
+        wifi_device_proxy.request_scan(HashMap::new()).await?;
+        Ok(())
     }
 }

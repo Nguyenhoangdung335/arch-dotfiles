@@ -5,17 +5,18 @@ mod ipc;
 mod modules;
 mod utils;
 
-use std::error::Error;
 use std::sync::Arc;
 
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-#[tokio::main(flavor = "current_thread")]
-async fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer()) // Output to console
+        .with(
+            tracing_subscriber::fmt::layer(), // .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE),
+        ) // Output to console
         .with(tracing_subscriber::EnvFilter::from_default_env()) // Enable RUST_LOG
         .init();
 
@@ -27,14 +28,24 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let cloned_cancel_token = cancel_token.clone();
     tokio::spawn(async move {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("failed to listen for event");
-        cloned_cancel_token.cancel();
+        let mut sigterm = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install SIGTERM handler");
+        tokio::select! {
+            _ = tokio::signal::ctrl_c() => {
+                tracing::info!("Ctrl+C pressed, shutting down...");
+                cloned_cancel_token.cancel();
+            },
+            _ = sigterm.recv() => {
+                tracing::info!("SIGTERM received, shutting down...");
+                cloned_cancel_token.cancel();
+            }
+        };
     });
 
     let app_ctx = app::AppContext::new(&sys_bus, cfg, cancel_token).await?;
-    ipc::server::start(app_ctx).await?;
+    ipc::server::start(app_ctx.clone()).await?;
+
+    app_ctx.shutdown().await;
 
     Ok(())
 }

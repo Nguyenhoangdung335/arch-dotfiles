@@ -1,15 +1,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "instructions": ["qml.instructions.md", "quickshell.instructions.md"],
   "agent": {
     "mentor": {
       "mode": "primary",
       "description": "Educational mentor agent",
-      "prompt": "{file:./AGENTS.md} {file:./EDUCATIONAL_AGENTS.md} {file:./ARCHITECTURE_INTENT.md}",
-      "instructions": [
-        "AGENTS.md",
-        "EDUCATIONAL_AGENTS.md",
-        "ARCHITECTURE_INTENT.md"
-      ],
+      "prompt": "{file:./EDUCATIONAL_AGENTS.md} {file:./ARCHITECTURE_INTENT.md}",
+      "instructions": ["EDUCATIONAL_AGENTS.md", "ARCHITECTURE_INTENT.md"],
       "permission": {
         "read": "allow",
         "glob": "allow",
@@ -26,8 +23,8 @@
     "implementer": {
       "mode": "primary",
       "description": "Implementation agent (writes code when explicitly requested)",
-      "prompt": "{file:./AGENTS.md} {file:./ARCHITECTURE_INTENT.md}",
-      "instructions": ["AGENTS.md", "ARCHITECTURE_INTENT.md"],
+      "prompt": "{file:./ARCHITECTURE_INTENT.md}",
+      "instructions": ["ARCHITECTURE_INTENT.md"],
       "permission": {
         "read": "allow",
         "glob": "allow",

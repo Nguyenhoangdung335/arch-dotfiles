@@ -21,13 +21,7 @@ Singleton {
     property int retryCount: 0
     property int currentRetryInterval: baseRetryInterval
     property bool isRetrying: false
-
-    property var networkState: {
-        "is_wireless_enabled": false,
-        "wifi_access_points": null,
-        "active_connection": null,
-        "wifi_device_object_path": null
-    }
+    property bool isConnected: false
 
     signal messageReceived(string module, var data)
 
@@ -41,13 +35,17 @@ Singleton {
             onConnectionStateChanged: {
                 if (connected) {
                     Log.info("BackendService: Connected to Rust Backend!");
+                    root.isConnected = true;
                     reconnectTimer.stop();
                     executeReconnect.stop();
                     root.isRetrying = false;
                     root.retryCount = 0;
-                } else if (!root.isRetrying) {
-                    Log.warn("BackendService: Unexpectedly disconnected. Starting retry sequence...");
-                    root.startRetrying();
+                } else {
+                    root.isConnected = false;
+                    if (!root.isRetrying) {
+                        Log.warn("BackendService: Unexpectedly disconnected. Starting retry sequence...");
+                        root.startRetrying();
+                    }
                 }
             }
 
@@ -110,21 +108,13 @@ Singleton {
 
     function resolveIncomingEvent(jsonString) {
         try {
+            console.info("BackendService: Received event:", jsonString);
             let event = JSON.parse(jsonString);
-
-            switch (event.module) {
-                case "network":
-                    root.networkState = event.data;
-                    console.log("Network state updated:", JSON.stringify(root.networkState));
-                    break;
-                case "bluetooth":
-                    // Future implementation...
-                    break;
-                default:
-                    console.warn("Unknown module received:", event.module);
-                    return;
-                }
-            root.messageReceived(event.module, event.data);
+            
+            let moduleName = event.module || "network";
+            let payload = event.data !== undefined ? event.data : event;
+            
+            root.messageReceived(moduleName, payload);
         } catch (e) {
             console.error("Failed to parse backend event:", e, "\nRaw String:", jsonString);
         }

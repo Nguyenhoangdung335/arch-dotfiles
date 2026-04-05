@@ -1,8 +1,11 @@
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum NetworkAction {
-    ToggleWifi,
-    ScanWifi,
     Connect { ssid: String },
     GetWifiDeviceObjectPath,
+    GetHostname,
+    GetSavedConnections,
+    ScanWifi,
+    GetCurrentState,
+    ToggleWifi,
 }

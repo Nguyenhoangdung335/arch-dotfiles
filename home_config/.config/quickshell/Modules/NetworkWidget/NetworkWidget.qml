@@ -9,6 +9,7 @@ import Quickshell.Hyprland
 import "../../Themes" as Th
 import "../../Components" as Comp
 import "../../Config" as Cfg
+import "../../Components/NetworkWidget" as NetComp
 
 PanelWindow {
     id: root
@@ -17,8 +18,8 @@ PanelWindow {
     property bool isAnimating: slideAnim.running
 
     // Widget dimensions
-    readonly property int widgetWidth: 350
-    readonly property int widgetHeight: 400
+    readonly property int widgetWidth: 650
+    readonly property int widgetHeight: 550
 
     color: "transparent"
 
@@ -43,18 +44,6 @@ PanelWindow {
 
     mask: Region {
         item: contentWrapper
-    }
-
-    // Keyboard navigation
-    Item {
-        anchors.fill: parent
-        focus: root.opened
-
-        Shortcut {
-            sequences: ["Escape"]
-            onActivated: root.close()
-            enabled: root.opened
-        }
     }
 
     Item {
@@ -122,26 +111,39 @@ PanelWindow {
                 Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
             }
 
-            // Placeholder for graph
+            // The Graph
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                Rectangle {
+                NetComp.GraphLayout {
+                    id: graphLayout
                     anchors.fill: parent
-                    color: Qt.rgba(Th.Theme.fg.r, Th.Theme.fg.g, Th.Theme.fg.b, 0.05)
-                    radius: 8
-                    border.width: 1
-                    border.color: Qt.rgba(Th.Theme.fg.r, Th.Theme.fg.g, Th.Theme.fg.b, 0.1)
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "Graph Placeholder"
-                        color: Qt.rgba(Th.Theme.fg.r, Th.Theme.fg.g, Th.Theme.fg.b, 0.5)
-                        font.pixelSize: 14
-                    }
+                    opened: root.opened
+                    focus: root.opened
+                    
+                    // Dummy model for testing if NetworkService is not available
+                    accessPointsModel: [
+                        { ssid: "Home_WiFi", strength: 90, connected: true },
+                        { ssid: "Guest_Network", strength: 60, connected: false },
+                        { ssid: "Cafe_Free", strength: 30, connected: false },
+                        { ssid: "Hidden_Network", strength: 50, connected: false },
+                        { ssid: "Neighbors_5G", strength: 75, connected: false }
+                    ]
                 }
             }
+        }
+    }
+
+    // Keyboard navigation
+    Item {
+        anchors.fill: parent
+        focus: root.opened
+
+        Shortcut {
+            sequence: Cfg.KeyBinds.closeWidget
+            onActivated: root.close()
+            enabled: root.opened
         }
     }
 
@@ -160,7 +162,7 @@ PanelWindow {
 
     // GlobalShortcut
     GlobalShortcut {
-        name: "toggleNetworkWidget"
+        name: Cfg.KeyBinds.toggleNetworkWidget
         description: "Toggle network widget"
         
         onPressed: root.toggle()

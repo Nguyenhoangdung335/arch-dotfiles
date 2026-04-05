@@ -2,3 +2,4 @@ module Services
 singleton ThemeService 1.0 ThemeService.qml
 singleton WallpaperService 1.0 WallpaperService.qml
 singleton BackendService 1.0 BackendService.qml
+singleton NetworkService 1.0 NetworkService.qml

@@ -5,9 +5,12 @@ QtObject {
     id: root
 
     // Global IPC Shortcuts (quickshell dbus names)
-    property string toggleConnectionGraph: "toggleConnectionGraph"
+    property string toggleNetworkWidget: "toggleNetworkWidget"
     property string toggleSidebar: "toggleSidebar"
     property string toggleBackendTester: "toggleBackendTester"
+    
+    // Generic UI Local Keybinds
+    property string closeWidget: "Escape"
     
     // Sidebar Local Keybinds (Qt.Sequence)
     property string sidebarNextTab: "Ctrl+Tab"

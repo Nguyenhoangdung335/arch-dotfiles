@@ -1,5 +1,5 @@
 pub const CONFIG_FILE: &str = "config.toml";
-pub const SERVICE_NAME: &str = "custom_qs";
+pub const SERVICE_NAME: &str = "shell-ricing";
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Clone, PartialEq)]
 pub struct Config {
