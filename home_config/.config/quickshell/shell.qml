@@ -5,6 +5,7 @@ import QtQuick
 // import "modules/notifications"
 import "Modules/Sidebar"
 import "Modules/BackendTesterPanel"
+import "Modules/NetworkWidget"
 import "Services" as Svc
 
 ShellRoot {
@@ -16,4 +17,5 @@ ShellRoot {
     }
     Sidebar {}
     BackendTesterPanel {}
+    NetworkWidget {}
 }
