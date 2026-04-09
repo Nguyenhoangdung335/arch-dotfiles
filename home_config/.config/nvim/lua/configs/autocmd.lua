@@ -31,7 +31,7 @@ vim.api.nvim_create_autocmd("VimLeavePre", {
 		local clients = vim.lsp.get_clients and vim.lsp.get_clients() or vim.lsp.get_active_clients()
 		for _, client in ipairs(clients) do
 			-- The 'true' argument forces the client to stop immediately
-			vim.lsp.stop_client(client.id, true)
+			client.stop(true)
 		end
 	end,
 })
