@@ -142,7 +142,7 @@ return {
 				},
 				qmlls = {
 					cmd = {
-						"qmlls",
+						"qmlls6",
 						"-I",
 						"/usr/lib/qt6/qml",
 						"-I",
