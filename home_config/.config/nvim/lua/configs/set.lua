@@ -87,4 +87,12 @@ vim.filetype.add({
 			end,
 		},
 	},
+	extension = {
+		tf = "terraform",
+		tfvars = "terraform-vars",
+		["tfcomponent.hcl"] = "terraform-stack",
+		["tfdeploy.hcl"] = "terraform-deploy",
+		["tfquery.hcl"] = "terraform-search",
+		["hcl"] = "hcl",
+	},
 })
