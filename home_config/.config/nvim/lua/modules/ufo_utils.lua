@@ -83,12 +83,6 @@ M.provider_selector = function(_, filetype, _)
 				local final_folds = folds or {}
 				-- Append our custom and manual folds to whichever provider succeeded
 				vim.list_extend(final_folds, all_custom)
-				-- Auto-close region folds after insertion
-				if #all_custom > 0 then
-					vim.defer_fn(function()
-						require("ufo").closeFoldsWith(nil, all_custom)
-					end, 0)
-				end
 				return final_folds
 			end)
 	end
@@ -139,6 +133,32 @@ M.setup_globals = function()
 			end
 			-- Match common comment syntax + region/endregion
 			pcall(vim.fn.matchadd, "@region.marker", '\\v^\\s*(//|#|--|"|/\\*)\\s*(end)?region.*$')
+		end,
+	})
+
+	-- Auto-close region folds when saving the buffer or opening a file
+	vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost" }, {
+		group = vim.api.nvim_create_augroup("UfoRegionAutoClose", { clear = true }),
+		callback = function(args)
+			local bufnr = args.buf
+			local filetype = vim.bo[bufnr].filetype
+			if not filetype or filetype == "" then
+				return
+			end
+
+			local custom_folds = region_fold_provider(bufnr, filetype)
+			local manual_folds = vim.b[bufnr].ufo_manual_folds or {}
+			local all_custom = {}
+			vim.list_extend(all_custom, custom_folds)
+			vim.list_extend(all_custom, manual_folds)
+
+			if #all_custom > 0 then
+				vim.defer_fn(function()
+					for _, fold in ipairs(all_custom) do
+						pcall(vim.cmd, string.format("%d,%dfoldclose", fold.startLine + 1, fold.endLine + 1))
+					end
+				end, 50)
+			end
 		end,
 	})
 end
