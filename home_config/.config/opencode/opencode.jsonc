@@ -1,0 +1,69 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "qt-dev": {
+      "description": "Qt/QML/QuickShell Developer agent",
+      "mode": "primary",
+      "model": "github-copilot/gemini-3.1-pro-preview",
+      "color": "#ffea98",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": {
+          "*": "ask",
+          "git status *": "allow",
+          "cargo build *": "allow",
+          "cmake *": "allow",
+          "make *": "allow",
+          "cmake --build *": "allow",
+        },
+        "skill": {
+          "*": "ask",
+          "code-review": "allow",
+          "systematic-debugging": "allow",
+        },
+      },
+      "tools": {
+        "skill": true,
+      },
+      "prompt": "{file:./instructions/qml.instructions.md}\n\n{file:./instructions/quickshell.instructions.md}",
+    },
+    "rust-dev": {
+      "description": "Rust Developer agent (standalone - use rust-orchestrator for multi-agent workflow)",
+      "mode": "primary",
+      "model": "github-copilot/gemini-3.1-pro-preview",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "ask",
+        "write": "ask",
+        "bash": {
+          "*": "ask",
+          "git status *": "allow",
+          "cargo format --check": "allow",
+          "cargo build *": "allow",
+          "cargo test *": "allow",
+          "cargo clippy *": "allow",
+        },
+        "skill": {
+          "*": "allow",
+          "test-driven-development": "allow",
+          "verification-before-completion": "allow",
+          "code-review": "allow",
+          "systematic-debugging": "allow",
+          "brainstorming": "allow",
+          "writing-plans": "allow",
+          "using-superpowers": "allow",
+        },
+      },
+      "tools": {
+        "skill": true,
+      },
+      "prompt": "{file:./instructions/rust/rust.instructions.md}\n\n{file:./instructions/rust/rust-antipatterns.instructions.md}",
+    },
+  },
+}
