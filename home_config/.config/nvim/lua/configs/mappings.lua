@@ -3,7 +3,14 @@ vim.g.mapleader = " "
 
 -- General Navigation & Tab Management
 -- -----------------------------------
-vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
+vim.keymap.set("n", "<leader>pv", function()
+	local file = vim.fn.expand("%:t")
+	vim.cmd("Ex")
+	vim.schedule(function()
+		local pattern = "^" .. vim.fn.escape(file, [[\.^$*~\[\]()]]) .. "$"
+		vim.fn.search(pattern)
+	end)
+end)
 -- vim.keymap.set("n", "<leader>t" , ":tabnew +terminal<cr>", {silent = true})
 -- vim.keymap.set("n", "<C-t>" , "gt")
 -- vim.keymap.set("n", "<C-T>" , "gT")
