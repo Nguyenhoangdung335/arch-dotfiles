@@ -59,7 +59,7 @@ vim.keymap.set(
 vim.keymap.set("n", "<CR>", "myo<Esc>'y", { desc = "Insert line below and return" })
 vim.keymap.set("n", "<S-CR>", "myO<Esc>'y", { desc = "Insert line above and return" })
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = "qf",
+	pattern = { "qf", "cmdwin", "help", "vim" },
 	callback = function()
 		vim.keymap.set("n", "<CR>", "<CR>", { buffer = true })
 		vim.keymap.set("n", "<S-CR>", "<S-CR>", { buffer = true })
