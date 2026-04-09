@@ -1,26 +1,3 @@
-local cache_file = vim.fn.stdpath("data") .. "/ts_unsupported"
-local function load_cache()
-	local set = {}
-	local ok, lines = pcall(vim.fn.readfile, cache_file)
-	if ok then
-		for _, line in ipairs(lines) do
-			if line ~= "" then
-				set[line] = true
-			end
-		end
-	end
-	return set
-end
-
-local function save_cache(set)
-	local lines = {}
-	for ft, _ in pairs(set) do
-		table.insert(lines, ft)
-	end
-	table.sort(lines)
-	vim.fn.writefile(lines, cache_file)
-end
-
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
@@ -32,6 +9,7 @@ return {
 		build = ":TSUpdate",
 		init = function()
 			-- Ensure installed after loading treesitter
+			local nvim_treesitter = require("nvim-treesitter")
 			local ensure_installed = {
 				"c",
 				"lua",
@@ -54,48 +32,21 @@ return {
 					return not vim.tbl_contains(alreadyInstalled, parser)
 				end)
 				:totable()
-			require("nvim-treesitter").install(parsersToInstall)
+			nvim_treesitter.install(parsersToInstall)
 
-			-- Installed parsers that are not part of the ensure_installed list, skipping filetypes that are not supported (cached)
+			-- Installed parsers that are not part of the ensure_installed list
 			-- Start treesitter safely and configure indentexpr
-			local unsupported = load_cache()
 			vim.api.nvim_create_autocmd("FileType", {
 				callback = function(args)
-					local buf = args.buf
-					local ft = vim.bo[buf].filetype
-
-					-- Skip cached unsupported
-					if unsupported[ft] then
-						return
-					end
-
-					local lang = vim.treesitter.language.get_lang(ft)
-					if not lang then
-						unsupported[ft] = true
-						save_cache(unsupported)
-						return
-					end
-
-					local has_parser = #vim.api.nvim_get_runtime_file("parser/" .. lang .. ".*", false) > 0
-
-					if not has_parser then
-						local ok = pcall(require("nvim-treesitter").install, { lang })
-
-						if not ok then
-							unsupported[ft] = true
-							save_cache(unsupported)
-							return
+					local lang = vim.treesitter.language.get_lang(args.match)
+					local available_langs = nvim_treesitter.get_available()
+					if vim.tbl_contains(available_langs, lang) then
+						if not vim.tbl_contains(nvim_treesitter.get_installed(), lang) then
+							nvim_treesitter.install(lang):wait()
 						end
+						pcall(vim.treesitter.start)
+						vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 					end
-
-					local ok = pcall(vim.treesitter.start, buf, lang)
-					if not ok then
-						unsupported[ft] = true
-						save_cache(unsupported)
-						return
-					end
-
-					vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 				end,
 			})
 		end,
@@ -136,6 +87,7 @@ return {
 				},
 				move = { set_jumps = true },
 			})
+
 			-- region: keymaps to select certain text objects (function, class)
 
 			local to_select = require("nvim-treesitter-textobjects.select")
