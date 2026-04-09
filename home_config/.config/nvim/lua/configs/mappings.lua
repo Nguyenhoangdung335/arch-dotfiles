@@ -192,6 +192,28 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
+-- Selection nodes navigation remap
+vim.keymap.set({ "x", "o" }, "<A-o>", function()
+	if vim.treesitter.get_parser(nil, nil, { error = false }) then
+		require("vim.treesitter._select").select_parent(vim.v.count1)
+	else
+		vim.lsp.buf.selection_range(vim.v.count1)
+	end
+end, { silent = true, desc = "Select outer (parent) node" })
+vim.keymap.set({ "x", "o" }, "<A-i>", function()
+	if vim.treesitter.get_parser(nil, nil, { error = false }) then
+		require("vim.treesitter._select").select_child(vim.v.count1)
+	else
+		vim.lsp.buf.selection_range(-vim.v.count1)
+	end
+end, { silent = true, desc = "Select inner (child) node" })
+vim.keymap.set({ "v", "o", "x" }, "<A-n>", function()
+	require("vim.treesitter._select").select_next(vim.v.count1)
+end, { silent = true, desc = "Select next node" })
+vim.keymap.set({ "v", "o", "x" }, "<A-N>", function()
+	require("vim.treesitter._select").select_prev(vim.v.count1)
+end, { silent = true, desc = "Select previous node" })
+
 -- Historical/Disabled Mappings (for reference)
 -- --------------------------------------------
 -- vim.keymap.set("n", "<leader>t" , ":tabnew +terminal<cr>", {silent = true})
