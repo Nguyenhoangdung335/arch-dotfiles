@@ -1,3 +1,21 @@
+local function read_ini_value(root_dir, key)
+	local ini = vim.fs.joinpath(root_dir, ".qmlls.ini")
+	if vim.fn.filereadable(ini) ~= 1 then
+		return nil
+	end
+
+	for _, line in ipairs(vim.fn.readfile(ini)) do
+		local value = line:match("^%s*" .. key .. "%s*=%s*(.-)%s*$")
+		if value then
+			value = value:gsub('^"(.*)"$', "%1")
+			value = value:gsub("^'(.*)'$", "%1")
+			return value
+		end
+	end
+
+	return nil
+end
+
 return {
 	{
 		"neovim/nvim-lspconfig",
@@ -143,10 +161,13 @@ return {
 				qmlls = {
 					cmd = {
 						"qmlls6",
+						"--no-cmake-calls",
 						"-I",
 						"/usr/lib/qt6/qml",
 						"-I",
-						"/usr/lib/qt/qml",
+						"/run/user/1000/quickshell/vfs/5be5eb4850299160e8c13ad899c0b79c",
+						"-b",
+						"/run/user/1000/quickshell/vfs/5be5eb4850299160e8c13ad899c0b79c",
 					},
 					root_markers = { ".qmlls.ini", "qmldir", ".git" },
 					on_attach = function(client)
