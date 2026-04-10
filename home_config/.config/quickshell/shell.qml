@@ -10,12 +10,15 @@ import "Services" as Svc
 
 ShellRoot {
 
-    // Load Services on startup
-    Component.onCompleted: {
-        Svc.ThemeService.load();
-        Svc.BackendService.load();
-    }
-    Sidebar {}
-    BackendTesterPanel {}
-    NetworkWidget {}
+  // Load Services on startup
+  Component.onCompleted: {
+    Svc.ThemeService.load();
+    Svc.BackendService.load();
+  }
+
+  Sidebar {}
+
+  BackendTesterPanel {}
+
+  NetworkWidget {}
 }
