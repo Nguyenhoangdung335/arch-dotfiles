@@ -1,4 +1,4 @@
-// .pragma library
+.pragma library
 
 /**
  * Log a message with the given level.
@@ -86,6 +86,22 @@ function error(message, ...optionalParams) {
 
   console.error(
     "[" + new Date().toISOString() + "] - [ERROR]",
+    message,
+    ...optionalParams,
+  );
+}
+
+function debug(message, ...optionalParams) {
+  if (typeof message !== "string") {
+    message = JSON.stringify(message);
+  }
+  for (let i = 0; i < optionalParams.length; i++) {
+    if (typeof optionalParams[i] === "object") {
+      optionalParams[i] = JSON.stringify(optionalParams[i]);
+    }
+  }
+  console.debug(
+    "[" + new Date().toISOString() + "] - [DEBUG]",
     message,
     ...optionalParams,
   );
