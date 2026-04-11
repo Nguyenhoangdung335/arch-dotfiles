@@ -254,9 +254,128 @@ impl NetworkQuery {
         Ok(hostname)
     }
 
-    pub async fn get_saved_connections(&self) -> anyhow::Result<Vec<String>> {
-        // TODO: Implement when needed
-        Ok(Vec::new())
+    pub async fn get_saved_connections(&self) -> anyhow::Result<Vec<SavedConnection>> {
+        let connection_paths = self.nm_settings_proxy.connections().await?;
+        let mut futures_tasks = FuturesUnordered::new();
+
+        for path in connection_paths {
+            let bus = self.sys_bus.clone();
+            futures_tasks.push(async move {
+                Self::fetch_single_saved_connection_with_bus(&bus, path).await
+            });
+        }
+
+        let mut saved_connections = Vec::new();
+        while let Some(result) = futures_tasks.next().await {
+            if let Some(conn) = result {
+                saved_connections.push(conn);
+            }
+        }
+
+        self.state_tx.send_if_modified(|state| {
+            update_if_changed(&mut state.saved_connections, saved_connections.clone())
+        });
+
+        Ok(saved_connections)
+    }
+
+    pub fn parse_saved_connection_dict(
+        path: &str,
+        mut settings: std::collections::HashMap<
+            String,
+            std::collections::HashMap<String, zbus::zvariant::OwnedValue>,
+        >,
+    ) -> Option<SavedConnection> {
+        let connection_setting = match settings.get_mut("connection") {
+            Some(s) => s,
+            None => {
+                warn!("No 'connection' setting found for {}", path);
+                return None;
+            }
+        };
+
+        let connection_type_val = match connection_setting.remove("type") {
+            Some(t) => t,
+            None => {
+                warn!("No 'type' in 'connection' setting for {}", path);
+                return None;
+            }
+        };
+
+        let connection_type = match String::try_from(connection_type_val) {
+            Ok(t) => t,
+            Err(e) => {
+                error!("Failed to parse 'type' for {}: {:?}", path, e);
+                return None;
+            }
+        };
+
+        if connection_type != "802-11-wireless" {
+            return None;
+        }
+
+        let mut timestamp = 0;
+        if let Some(timestamp_val) = connection_setting.remove("timestamp")
+            && let Ok(ts) = u64::try_from(timestamp_val)
+        {
+            timestamp = ts;
+        }
+
+        let mut ssid = String::new();
+        if let Some(wifi_setting) = settings.get_mut("802-11-wireless") {
+            if let Some(ssid_val) = wifi_setting.remove("ssid") {
+                if let Ok(bytes) = <Vec<u8>>::try_from(ssid_val) {
+                    ssid = String::from_utf8_lossy(&bytes).into_owned();
+                } else {
+                    warn!("'ssid' value for {} is not a byte array", path);
+                }
+            } else {
+                warn!("No 'ssid' found in '802-11-wireless' setting for {}", path);
+            }
+        } else {
+            warn!(
+                "No '802-11-wireless' setting found for {} despite connection type",
+                path
+            );
+        }
+
+        Some(SavedConnection {
+            ssid,
+            object_path: path.to_string(),
+            connection_type,
+            timestamp,
+        })
+    }
+
+    async fn fetch_single_saved_connection_with_bus(
+        sys_bus: &zbus::Connection,
+        path: OwnedObjectPath,
+    ) -> Option<SavedConnection> {
+        let proxy = match super::proxies::NMSettingsConnectionProxy::builder(sys_bus)
+            .path(path.clone())
+            .ok()?
+            .build()
+            .await
+        {
+            Ok(p) => p,
+            Err(e) => {
+                error!(
+                    "Failed to build NMSettingsConnectionProxy for {}: {:?}",
+                    path, e
+                );
+                return None;
+            }
+        };
+
+        let settings = match proxy.get_settings().await {
+            Ok(s) => s,
+            Err(e) => {
+                error!("Failed to get settings for {}: {:?}", path, e);
+                return None;
+            }
+        };
+
+        Self::parse_saved_connection_dict(&path.to_string(), settings)
     }
 
     pub async fn get_nm_state(&self) -> anyhow::Result<NMState> {
