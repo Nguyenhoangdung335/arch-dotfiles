@@ -19,6 +19,7 @@ pub enum NetworkMessage {
     RegisterNMDeviceWirelessEvent(String),
     ActiveAccessPointChanged(OwnedObjectPath),
     AccessPointsChanged(Vec<OwnedObjectPath>),
+    SavedConnectionsSynced,
 }
 
 pub struct NetworkModuleHandle {
