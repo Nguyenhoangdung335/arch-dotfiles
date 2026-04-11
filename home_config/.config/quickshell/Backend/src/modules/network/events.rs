@@ -175,7 +175,40 @@ impl NetworkEvent {
         Ok(())
     }
 
-    // region --- Extracted Helpers ---
+    pub async fn register_nm_settings_event(&mut self) -> anyhow::Result<()> {
+        let sys_bus = self.sys_bus.clone();
+        let internal_bus_sender = self.internal_bus_sender.clone();
+        let cancel_token = self.cancel_token.child_token();
+
+        let proxy = super::proxies::NMSettingsProxy::new(&sys_bus).await?;
+        let mut new_conn_stream = proxy.receive_new_connection().await?;
+        let mut conn_removed_stream = proxy.receive_connection_removed().await?;
+
+        tokio::spawn(async move {
+            use futures::StreamExt;
+            loop {
+                tokio::select! {
+                    _ = cancel_token.cancelled() => break,
+                    Some(signal) = new_conn_stream.next() => {
+                        if let Ok(args) = signal.args() {
+                            debug!("New connection added: {}", args.path());
+                            let _ = internal_bus_sender.send(NetworkMessage::SavedConnectionsSynced).await;
+                        }
+                    }
+                    Some(signal) = conn_removed_stream.next() => {
+                        if let Ok(args) = signal.args() {
+                            debug!("Connection removed: {}", args.path());
+                            let _ = internal_bus_sender.send(NetworkMessage::SavedConnectionsSynced).await;
+                        }
+                    }
+                }
+            }
+        });
+
+        Ok(())
+    }
+
+    // region: Helpers
 
     async fn debounce_access_points_task(
         mut ap_rx: watch::Receiver<Option<Vec<OwnedObjectPath>>>,
@@ -202,4 +235,6 @@ impl NetworkEvent {
             }
         }
     }
+
+    // endregion
 }
