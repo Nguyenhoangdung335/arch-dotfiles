@@ -175,9 +175,13 @@ impl NetworkActor {
                     Err(e) => error!("Failed to scan for networks: {}", e),
                 };
             }
-            NetworkAction::Connect { ssid } => {
+            NetworkAction::Connect { ssid, password } => {
                 info!("Connecting to {}", ssid);
-                match self.command.activate_connection("", "", "").await {
+                match self
+                    .command
+                    .connect_to_network(&ssid, password.as_deref())
+                    .await
+                {
                     Ok(_) => info!("Successfully connected to {}", ssid),
                     Err(e) => error!("Failed to connect to {}: {}", ssid, e),
                 };
