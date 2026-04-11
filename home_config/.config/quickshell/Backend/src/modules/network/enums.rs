@@ -76,6 +76,19 @@ impl From<u32> for NMDeviceType {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub enum NMSecretSettingName {
+    WifiSecurity,
+    Ppp,
+    Gsm,
+}
 
+impl NMSecretSettingName {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::WifiSecurity => "802-11-wireless-security",
+            Self::Ppp => "ppp",
+            Self::Gsm => "gsm",
+        }
     }
 }
