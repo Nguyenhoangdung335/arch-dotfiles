@@ -390,3 +390,7 @@ impl NetworkQuery {
         Ok(connectivity.into())
     }
 }
+
+#[cfg(test)]
+#[path = "queries_tests.rs"]
+mod queries_tests;
