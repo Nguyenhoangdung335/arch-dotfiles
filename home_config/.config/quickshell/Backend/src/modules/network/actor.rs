@@ -72,6 +72,14 @@ impl NetworkActor {
             }
         };
 
+        match event.register_nm_settings_event().await {
+            Ok(_) => info!("Successfully registered NM Settings event"),
+            Err(e) => {
+                error!(error = ?e, "Failed to register NM Settings event");
+                return Err(e);
+            }
+        };
+
         let actor = Self {
             cancel_token: cancel_token.clone(),
             query,
