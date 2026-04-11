@@ -162,6 +162,10 @@ impl NetworkQuery {
             }
         });
 
+        self.internal_bus_sender
+            .send(NetworkMessage::SavedConnectionsSynced)
+            .await?;
+
         Ok(())
     }
 
