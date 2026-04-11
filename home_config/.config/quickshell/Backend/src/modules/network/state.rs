@@ -43,12 +43,14 @@ pub struct WifiAccessPoint {
     pub secure: bool,        // derive from flags, wpa_flags, and rsn_flags
 }
 
+// region: WifiAccessPoint impl
+
 impl TryFrom<HashMap<String, OwnedValue>> for WifiAccessPoint {
     type Error = anyhow::Error;
 
     fn try_from(mut map: HashMap<String, OwnedValue>) -> Result<Self, Self::Error> {
         Ok(Self {
-            ssid: String::from_utf8(take::<Vec<u8>>(&mut map, "Ssid")?)?,
+            ssid: String::from_utf8_lossy(&take::<Vec<u8>>(&mut map, "Ssid")?).into_owned(),
             hw_address: take(&mut map, "HwAddress")?,
             strength: take_or(&mut map, "Strength", 0),
             frequency: take_or(&mut map, "Frequency", 0),
@@ -105,6 +107,8 @@ impl WifiAccessPoint {
         (self.flags & 0x1) != 0 || self.wpa_flags != 0 || self.rsn_flags != 0
     }
 }
+
+// endregion
 
 #[derive(Clone, Debug, serde::Serialize, Default, PartialEq, Eq)]
 pub struct NetworkState {
