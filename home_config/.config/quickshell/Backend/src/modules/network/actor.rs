@@ -141,6 +141,11 @@ impl NetworkActor {
                                 update_if_changed(&mut state.wifi_access_points, aps)
                             });
                         }
+                        NetworkMessage::SavedConnectionsSynced => {
+                            if let Err(e) = self.query.get_saved_connections().await {
+                                error!("Failed to sync saved connections: {:?}", e);
+                            }
+                        }
                     }
                 },
                 _ = self.cancel_token.cancelled() => {
