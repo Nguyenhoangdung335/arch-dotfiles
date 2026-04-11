@@ -164,3 +164,7 @@ impl NetworkCommand {
         Ok((saved_conn_path, wifi_device_path, ap_path, secure))
     }
 }
+
+#[cfg(test)]
+#[path = "commands_tests.rs"]
+mod commands_tests;
