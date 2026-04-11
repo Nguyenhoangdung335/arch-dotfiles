@@ -3,8 +3,10 @@ use std::collections::HashMap;
 use tokio::sync::watch::Receiver;
 use zbus::zvariant::OwnedObjectPath;
 
-use super::proxies::{NMDeviceWirelessProxy, NetworkManagerProxy};
-use super::state::NetworkState;
+use crate::{
+    modules::network::proxies::{NMDeviceWirelessProxy, NetworkManagerProxy},
+    modules::network::state::NetworkState,
+};
 
 pub struct NetworkCommand {
     sys_bus: zbus::Connection,

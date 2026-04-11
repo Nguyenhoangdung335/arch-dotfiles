@@ -5,16 +5,16 @@ use tracing::{error, warn};
 
 use zbus::zvariant::OwnedObjectPath;
 
-use crate::{update_state_if_changed, utils::compare::update_if_changed};
-
-use super::{
-    actor::NetworkMessage,
-    enums::{NMConnectivity, NMDeviceType, NMState},
-    proxies::{
+use crate::{
+    modules::network::actor::NetworkMessage,
+    modules::network::enums::{NMConnectivity, NMDeviceType, NMState},
+    modules::network::proxies::{
         NMAccessPointPropertiesProxy, NMDeviceProxy, NMDeviceWirelessProxy, NMSettingsProxy,
         NetworkManagerProxy,
     },
-    state::{NetworkState, WifiAccessPoint},
+    modules::network::state::{NetworkState, SavedConnection, WifiAccessPoint},
+    update_state_if_changed,
+    utils::compare::update_if_changed,
 };
 
 pub struct NetworkQuery {

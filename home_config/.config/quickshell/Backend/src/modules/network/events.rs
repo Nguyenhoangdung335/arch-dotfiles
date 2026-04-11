@@ -7,13 +7,14 @@ use tracing::debug;
 use tracing::{Instrument, error, info};
 use zbus::zvariant::OwnedObjectPath;
 
-use crate::core::dbus_listener::DbusPropertyListener;
-use crate::utils::compare::update_if_changed;
-use crate::{proxy_span, update_state_if_changed};
-
-use super::actor::NetworkMessage;
-use super::proxies::{NMDeviceWirelessProxy, NetworkManagerProxy};
-use super::state::NetworkState;
+use crate::{
+    core::dbus_listener::DbusPropertyListener,
+    modules::network::actor::NetworkMessage,
+    modules::network::proxies::{NMDeviceWirelessProxy, NetworkManagerProxy},
+    modules::network::state::NetworkState,
+    proxy_span, update_state_if_changed,
+    utils::compare::update_if_changed,
+};
 
 pub struct NetworkEvent {
     sys_bus: zbus::Connection,

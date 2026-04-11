@@ -3,13 +3,13 @@ use tokio_util::sync::CancellationToken;
 use tracing::{debug, error, info};
 use zbus::zvariant::OwnedObjectPath;
 
-use crate::utils::compare::update_if_changed;
-
-use super::action::NetworkAction;
-use super::commands::NetworkCommand;
-use super::events::NetworkEvent;
-use super::queries::NetworkQuery;
-use super::state::NetworkState;
+use crate::{
+    modules::network::{
+        action::NetworkAction, commands::NetworkCommand, events::NetworkEvent,
+        queries::NetworkQuery, state::NetworkState,
+    },
+    utils::compare::update_if_changed,
+};
 
 #[derive(Debug)]
 pub enum NetworkMessage {
