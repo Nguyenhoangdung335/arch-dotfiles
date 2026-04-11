@@ -115,4 +115,21 @@ pub trait NMSettings {
     fn connections(&self) -> zbus::Result<Vec<OwnedObjectPath>>; // ao
     #[zbus(property)]
     fn hostname(&self) -> zbus::Result<String>; // s
+
+    #[zbus(signal)]
+    fn new_connection(&self, path: zbus::zvariant::ObjectPath<'_>) -> zbus::Result<()>;
+    #[zbus(signal)]
+    fn connection_removed(&self, path: zbus::zvariant::ObjectPath<'_>) -> zbus::Result<()>;
+}
+
+#[proxy(
+    default_service = "org.freedesktop.NetworkManager",
+    interface = "org.freedesktop.NetworkManager.Settings.Connection"
+)]
+pub trait NMSettingsConnection {
+    async fn get_settings(&self) -> zbus::Result<HashMap<String, HashMap<String, OwnedValue>>>;
+    async fn get_secrets(
+        &self,
+        setting_name: &str,
+    ) -> zbus::Result<HashMap<String, HashMap<String, OwnedValue>>>;
 }
