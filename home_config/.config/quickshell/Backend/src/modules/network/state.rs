@@ -110,16 +110,26 @@ impl WifiAccessPoint {
 
 // endregion
 
+#[derive(Clone, Debug, serde::Serialize, PartialEq, Eq)]
+pub struct SavedConnection {
+    pub ssid: String,
+    pub object_path: String,
+    pub connection_type: String,
+    pub timestamp: u64,
+}
+
 #[derive(Clone, Debug, serde::Serialize, Default, PartialEq, Eq)]
 pub struct NetworkState {
     pub wifi_access_points: Vec<WifiAccessPoint>,
+    #[serde(skip)]
+    pub saved_connections: Vec<SavedConnection>,
+    pub active_access_point: Option<WifiAccessPoint>, // o
+    pub wifi_device_object_path: Option<String>,      // internal use
     pub wireless_enabled: bool,                       // b
     pub networking_enabled: bool,                     // b
     pub state: u8,                                    // u
     pub connectivity: u8,                             // u
-    pub active_access_point: Option<WifiAccessPoint>, // o
     pub hostname: String,                             // s
-    pub wifi_device_object_path: Option<String>,      // internal use
 }
 
 impl NetworkState {
