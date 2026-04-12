@@ -73,17 +73,16 @@ vim.opt.undofile = true -- Enable persistent undo
 vim.filetype.add({
 	pattern = {
 		[".*%.js"] = {
-			priority = 10,
+			priority = 1,
 			function(_, bufnr)
 				if not bufnr then
 					return
 				end
-				-- Read the first line of the buffer
-				local lines = vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)
-				if lines[1] and lines[1]:match("^%.pragma library") then
+
+				local line = vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)[1]
+				if line and line:match("^%.pragma%s+library") then
 					return "qmljs"
 				end
-				-- If it's not a Quickshell file, fallback to default 'javascript'
 			end,
 		},
 	},
