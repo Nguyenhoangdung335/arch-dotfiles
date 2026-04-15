@@ -33,10 +33,26 @@ return {
 				end)
 				:totable()
 			nvim_treesitter.install(parsersToInstall)
+			local indent_cache = {}
+
+			local function has_ts_indent(lang)
+				if not lang or lang == "" then
+					return false
+				end
+
+				if indent_cache[lang] ~= nil then
+					return indent_cache[lang]
+				end
+
+				local files = vim.api.nvim_get_runtime_file(("queries/%s/indents.scm"):format(lang), true)
+				local ok = #files > 0
+				indent_cache[lang] = ok
+				return ok
+			end
 
 			-- Installed parsers that are not part of the ensure_installed list
 			-- Start treesitter safely and configure indentexpr
-			vim.api.nvim_create_autocmd("FileType", {
+			--[[ vim.api.nvim_create_autocmd("FileType", {
 				callback = function(args)
 					local lang = vim.treesitter.language.get_lang(args.match)
 					local available_langs = nvim_treesitter.get_available()
@@ -46,6 +62,29 @@ return {
 						end
 						pcall(vim.treesitter.start)
 						vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+					end
+				end,
+			}) ]]
+			vim.api.nvim_create_autocmd("FileType", {
+				callback = function(args)
+					local ft = vim.bo[args.buf].filetype
+					local lang = vim.treesitter.language.get_lang(ft) or ft
+					local available_langs = nvim_treesitter.get_available()
+
+					if not vim.tbl_contains(available_langs, lang) then
+						return
+					end
+
+					if not vim.tbl_contains(nvim_treesitter.get_installed(), lang) then
+						nvim_treesitter.install(lang):wait()
+					end
+
+					pcall(vim.treesitter.start)
+
+					if has_ts_indent(lang) then
+						vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+					else
+						vim.bo[args.buf].indentexpr = ""
 					end
 				end,
 			})

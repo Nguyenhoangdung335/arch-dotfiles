@@ -4,7 +4,6 @@ import QtQuick
 import QtQuick.Controls
 import "."
 import "../../Services" as Svc
-import "../../JSUtils/Logging.js" as Log
 import "../../Config" as Config
 
 FocusScope {
@@ -30,28 +29,30 @@ FocusScope {
   property real sunflowerMinRadius: 80 // Minimum distance from center
 
   property real globalAngleOffset: 0
-  NumberAnimation on globalAngleOffset {
-    from: 0
-    to: Math.PI * 2
-    duration: root.orbitDuration
-    loops: Animation.Infinite
-    running: root.opened && !root.isZoomed
+  property real spreadFactor: opened ? 1.0 : 0.0
+  property real zoomLevel: 1.0
+
+  Behavior on spreadFactor {
+    SpringAnimation {
+      spring: 2.0
+      damping: 0.15
+    }
   }
 
   function calculateSunflowerCoords(index) {
     // Golden angle in radians
     const goldenAngle = 2.39996;
-    
+
     // Angle: index * golden angle + global rotation
     let angle = (index * goldenAngle) + root.globalAngleOffset;
-    
+
     // Radius: scales with square root of index
-    let radius = root.sunflowerMinRadius + (root.sunflowerC * Math.sqrt(index));
-    
+    let radius = (root.sunflowerMinRadius + root.sunflowerC * Math.sqrt(index)) * root.spreadFactor;
+
     // Calculate final X and Y relative to map center
     let centerX = root.mapSize / 2;
     let centerY = root.mapSize / 2;
-    
+
     return {
       x: centerX + radius * Math.cos(angle),
       y: centerY + radius * Math.sin(angle)
@@ -59,6 +60,14 @@ FocusScope {
   }
 
   clip: true
+
+  NumberAnimation on globalAngleOffset {
+    from: 0
+    to: Math.PI * 2
+    duration: root.orbitDuration
+    loops: Animation.Infinite
+    running: root.opened && !root.isZoomed
+  }
 
   onOpenedChanged: {
     if (opened) {
@@ -107,80 +116,26 @@ FocusScope {
   Flickable {
     id: graphContainer
 
+    function ensureVisible(idx) {
+      if (idx < 0 || idx >= nodeRepeater.count)
+        return;
+      let node = nodeRepeater.itemAt(idx);
+      if (!node)
+        return;
+
+      // Smoothly pan flickable to keep node centered
+      let targetCX = node.targetX + node.width / 2 - graphContainer.width / 2;
+      let targetCY = node.targetY + node.height / 2 - graphContainer.height / 2;
+
+      graphContainer.contentX = Math.max(0, Math.min(targetCX, graphContainer.contentWidth - graphContainer.width));
+      graphContainer.contentY = Math.max(0, Math.min(targetCY, graphContainer.contentHeight - graphContainer.height));
+    }
+
     anchors.fill: parent
     contentWidth: root.mapSize
     contentHeight: root.mapSize
     interactive: true
-  clip: true
-
-  Shortcut {
-    sequence: Config.KeyBinds.networkNextNode
-    onActivated: {
-      if (nodeRepeater.count > 0) {
-        if (searchField.visible) {
-          let start = (root.currentIndex + 1) % nodeRepeater.count;
-          for (let i = 0; i < nodeRepeater.count; i++) {
-            let idx = (start + i) % nodeRepeater.count;
-            let item = nodeRepeater.itemAt(idx);
-            if (item && item.matchesSearch) {
-              root.currentIndex = idx;
-              break;
-            }
-          }
-        } else {
-          root.currentIndex = (root.currentIndex + 1) % nodeRepeater.count;
-        }
-        ensureVisible(root.currentIndex);
-      }
-    }
-  }
-  Shortcut {
-    sequence: Config.KeyBinds.networkPrevNode
-    onActivated: {
-      if (nodeRepeater.count > 0) {
-        if (searchField.visible) {
-          let start = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
-          for (let i = 0; i < nodeRepeater.count; i++) {
-            let idx = (start - i + nodeRepeater.count) % nodeRepeater.count;
-            let item = nodeRepeater.itemAt(idx);
-            if (item && item.matchesSearch) {
-              root.currentIndex = idx;
-              break;
-            }
-          }
-        } else {
-          root.currentIndex = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
-        }
-        ensureVisible(root.currentIndex);
-      }
-    }
-  }
-  Shortcut {
-    sequence: Config.KeyBinds.networkSearch
-    onActivated: {
-      searchField.visible = true;
-      searchField.forceActiveFocus();
-    }
-  }
-
-  function ensureVisible(idx) {
-    if (idx < 0 || idx >= nodeRepeater.count) return;
-    let node = nodeRepeater.itemAt(idx);
-    if (!node) return;
-    
-    // Smoothly pan flickable to keep node centered
-    let targetCX = node.targetX + node.width/2 - graphContainer.width/2;
-    let targetCY = node.targetY + node.height/2 - graphContainer.height/2;
-    
-    graphContainer.contentX = Math.max(0, Math.min(targetCX, graphContainer.contentWidth - graphContainer.width));
-    graphContainer.contentY = Math.max(0, Math.min(targetCY, graphContainer.contentHeight - graphContainer.height));
-  }
-
-    // Center on PC node initially
-    Component.onCompleted: {
-      contentX = (root.mapSize - root.width) / 2;
-      contentY = (root.mapSize - root.height) / 2;
-    }
+    clip: true
 
     transform: [
       Translate {
@@ -230,11 +185,8 @@ FocusScope {
 
         origin.x: root.width / 2
         origin.y: root.height / 2
-        // We could also set origin to the selected node so it zooms into it
-        // origin.x: { ... }
-        // For now, scale and translate separate is fine
-        xScale: root.isZoomed ? 1.5 : 1.0
-        yScale: root.isZoomed ? 1.5 : 1.0
+        xScale: root.zoomLevel
+        yScale: root.zoomLevel
 
         Behavior on xScale {
           NumberAnimation {
@@ -250,6 +202,96 @@ FocusScope {
         }
       }
     ]
+
+    WheelHandler {
+      id: wheelHandler
+
+      acceptedDevices: PointerDevice.Mouse
+      onWheel: event => {
+        let delta = event.angleDelta.y / 120;
+        let step = 0.1;
+        if (delta > 0) {
+          root.zoomLevel = Math.min(3.0, root.zoomLevel + step);
+        } else if (delta < 0) {
+          root.zoomLevel = Math.max(0.2, root.zoomLevel - step);
+        }
+      }
+    }
+
+    PinchHandler {
+      id: pinchHandler
+
+      target: null // We handle zoom manually
+      onActiveChanged: {
+        if (!active) return;
+      }
+      onScaleChanged: {
+        let delta = scale - 1.0;
+        let newZoom = root.zoomLevel + delta * 0.1;
+        root.zoomLevel = Math.max(0.2, Math.min(3.0, newZoom));
+      }
+    }
+
+    // Center on PC node initially
+    Component.onCompleted: {
+      contentX = (root.mapSize - root.width) / 2;
+      contentY = (root.mapSize - root.height) / 2;
+    }
+
+    Shortcut {
+      sequence: Config.KeyBinds.networkNextNode
+
+      onActivated: {
+        if (nodeRepeater.count > 0) {
+          if (searchField.visible) {
+            let start = (root.currentIndex + 1) % nodeRepeater.count;
+            for (let i = 0; i < nodeRepeater.count; i++) {
+              let idx = (start + i) % nodeRepeater.count;
+              let item = nodeRepeater.itemAt(idx);
+              if (item && item.matchesSearch) {
+                root.currentIndex = idx;
+                break;
+              }
+            }
+          } else {
+            root.currentIndex = (root.currentIndex + 1) % nodeRepeater.count;
+          }
+          graphContainer.ensureVisible(root.currentIndex);
+        }
+      }
+    }
+
+    Shortcut {
+      sequence: Config.KeyBinds.networkPrevNode
+
+      onActivated: {
+        if (nodeRepeater.count > 0) {
+          if (searchField.visible) {
+            let start = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
+            for (let i = 0; i < nodeRepeater.count; i++) {
+              let idx = (start - i + nodeRepeater.count) % nodeRepeater.count;
+              let item = nodeRepeater.itemAt(idx);
+              if (item && item.matchesSearch) {
+                root.currentIndex = idx;
+                break;
+              }
+            }
+          } else {
+            root.currentIndex = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
+          }
+          graphContainer.ensureVisible(root.currentIndex);
+        }
+      }
+    }
+
+    Shortcut {
+      sequence: Config.KeyBinds.networkSearch
+
+      onActivated: {
+        searchField.visible = true;
+        searchField.forceActiveFocus();
+      }
+    }
 
     // Active Edge between PC and current selection
     ActiveEdge {
@@ -284,17 +326,18 @@ FocusScope {
       delegate: NetworkNode {
         id: networkNode
 
-        required property string ssid
-        required property int strength
-        required property bool connected
+        required property var modelData
         required property int index
         property bool matchesSearch: root.searchQuery === "" || ssid.toLowerCase().indexOf(root.searchQueryLower) !== -1
+        property point coords: root.calculateSunflowerCoords(index)
 
-        isCurrent: connected
+        ssid: modelData.ssid !== undefined ? modelData.ssid : "Unknown"
+        strength: modelData.strength !== undefined ? modelData.strength : 0
+        connected: modelData.connected !== undefined ? modelData.connected : false
+        isCurrent: modelData.connected
         opened: root.opened
         isFocused: index === root.currentIndex
         opacity: opened ? (matchesSearch ? 1.0 : 0.2) : 0.0
-        property point coords: root.calculateSunflowerCoords(index)
         targetX: coords.x - width / 2
         targetY: coords.y - height / 2
         z: isFocused || isHovered ? 5 : 1
@@ -324,7 +367,10 @@ FocusScope {
     id: detailDrawerLoader
 
     active: root.selectedNodeData !== null
-    anchors.fill: parent
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    width: item ? item.width : 0
 
     sourceComponent: Component {
       NetworkDetailDrawer {

@@ -24,8 +24,8 @@ Rectangle {
   border.color: isCurrent ? "#8FBCBB" : (isFocused || isHovered ? "#81A1C1" : "#3B4252")
   border.width: isFocused || isHovered ? 3 : 2
   scale: isFocused || isHovered ? 1.2 : 1.0
-  x: opened ? targetX : parent.width / 2 - width / 2
-  y: opened ? targetY : parent.height / 2 - height / 2
+  x: targetX
+  y: targetY
 
   Behavior on width {
     NumberAnimation {
@@ -35,18 +35,6 @@ Rectangle {
   Behavior on scale {
     NumberAnimation {
       duration: 150
-    }
-  }
-  Behavior on x {
-    SpringAnimation {
-      spring: 2.0
-      damping: 0.15
-    }
-  }
-  Behavior on y {
-    SpringAnimation {
-      spring: 2.0
-      damping: 0.15
     }
   }
   Behavior on opacity {

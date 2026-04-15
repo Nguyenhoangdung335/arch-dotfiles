@@ -16,6 +16,7 @@
     "bash": "ask",
     "skill": {
       "*": "ask",
+      "caveman": "allow",
       "writing-plans": "allow",
       "dispatching-parallel-agents": "allow",
       "brainstorming": "allow",

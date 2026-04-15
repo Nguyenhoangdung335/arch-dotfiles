@@ -18,8 +18,8 @@ PanelWindow {
   property bool isAnimating: slideAnim.running
 
   // Widget dimensions
-  readonly property int widgetWidth: 650
-  readonly property int widgetHeight: 550
+  readonly property int widgetWidth: 1200
+  readonly property int widgetHeight: 1200
 
   // Toggle Functions
   function toggle() {
