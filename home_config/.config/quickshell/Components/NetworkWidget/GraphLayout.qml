@@ -5,6 +5,7 @@ import QtQuick.Controls
 import "."
 import "../../Services" as Svc
 import "../../JSUtils/Logging.js" as Log
+import "../../Config" as Config
 
 FocusScope {
   id: root
@@ -75,30 +76,7 @@ FocusScope {
     Log.info("radiusBase:" + radiusBase);
   }
   Keys.onPressed: event => {
-    if ((event.modifiers & Qt.ControlModifier)) {
-      switch (event.key) {
-      case Qt.Key_N:
-        if (nodeRepeater.count > 0) {
-          currentIndex = (currentIndex + 1) % nodeRepeater.count;
-        }
-        event.accepted = true;
-        break;
-      case Qt.Key_P:
-        if (nodeRepeater.count > 0) {
-          currentIndex = (currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
-        }
-        event.accepted = true;
-        break;
-      case Qt.Key_F:
-        searchField.visible = true;
-        searchField.forceActiveFocus();
-        event.accepted = true;
-        break;
-      default:
-        Log.debug("Unhandled key: " + event.key);
-        break;
-      }
-    } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
+    if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
       if (currentIndex >= 0 && currentIndex < nodeRepeater.count) {
         let item = nodeRepeater.itemAt(currentIndex);
         if (item) {
@@ -137,7 +115,42 @@ FocusScope {
     contentWidth: root.mapSize
     contentHeight: root.mapSize
     interactive: true
-    clip: true
+  clip: true
+
+  Shortcut {
+    sequence: Config.KeyBinds.networkNextNode
+    onActivated: {
+      if (nodeRepeater.count > 0) root.currentIndex = (root.currentIndex + 1) % nodeRepeater.count;
+      ensureVisible(root.currentIndex);
+    }
+  }
+  Shortcut {
+    sequence: Config.KeyBinds.networkPrevNode
+    onActivated: {
+      if (nodeRepeater.count > 0) root.currentIndex = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
+      ensureVisible(root.currentIndex);
+    }
+  }
+  Shortcut {
+    sequence: Config.KeyBinds.networkSearch
+    onActivated: {
+      searchField.visible = true;
+      searchField.forceActiveFocus();
+    }
+  }
+
+  function ensureVisible(idx) {
+    if (idx < 0 || idx >= nodeRepeater.count) return;
+    let node = nodeRepeater.itemAt(idx);
+    if (!node) return;
+    
+    // Smoothly pan flickable to keep node centered
+    let targetCX = node.targetX + node.width/2 - graphContainer.width/2;
+    let targetCY = node.targetY + node.height/2 - graphContainer.height/2;
+    
+    graphContainer.contentX = Math.max(0, Math.min(targetCX, graphContainer.contentWidth - graphContainer.width));
+    graphContainer.contentY = Math.max(0, Math.min(targetCY, graphContainer.contentHeight - graphContainer.height));
+  }
 
     // Center on PC node initially
     contentX: (root.mapSize - width) / 2
