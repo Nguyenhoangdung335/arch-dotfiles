@@ -20,9 +20,12 @@ FocusScope {
   property bool isZoomed: false
   property var selectedNodeData: null
 
+  property real minZoom: 0.2
+  property real maxZoom: 3.0
+
   // Pannable Universe Config
-  property int mapSize: 2500
-  property int orbitDuration: 60000
+  property int mapSize: (sunflowerMinRadius + sunflowerC * Math.sqrt(Math.max(1, accessPointsModel ? accessPointsModel.count : 1)) + 300) * 2
+  property int orbitDuration: 300000
 
   // Sunflower Math Config
   property real sunflowerC: 45 // Distance multiplier
@@ -31,13 +34,6 @@ FocusScope {
   property real globalAngleOffset: 0
   property real spreadFactor: opened ? 1.0 : 0.0
   property real zoomLevel: 1.0
-
-  Behavior on spreadFactor {
-    SpringAnimation {
-      spring: 2.0
-      damping: 0.15
-    }
-  }
 
   function calculateSunflowerCoords(index) {
     // Golden angle in radians
@@ -68,16 +64,30 @@ FocusScope {
     loops: Animation.Infinite
     running: root.opened && !root.isZoomed
   }
+  Behavior on spreadFactor {
+    SpringAnimation {
+      spring: 2.0
+      damping: 0.15
+    }
+  }
 
   onOpenedChanged: {
     if (opened) {
       root.forceActiveFocus();
+      searchField.visible = false;
       searchField.text = "";
       searchQuery = "";
       isZoomed = false;
       selectedNodeData = null;
+      root.zoomLevel = 1.0;
+      graphContainer.contentX = (root.mapSize - graphContainer.width) / 2;
+      graphContainer.contentY = (root.mapSize - graphContainer.height) / 2;
     } else {
+      searchField.visible = false;
       currentIndex = -1;
+      root.zoomLevel = 1.0;
+      graphContainer.contentX = (root.mapSize - graphContainer.width) / 2;
+      graphContainer.contentY = (root.mapSize - graphContainer.height) / 2;
     }
   }
   Keys.onPressed: event => {
@@ -138,48 +148,6 @@ FocusScope {
     clip: true
 
     transform: [
-      Translate {
-        id: graphTranslate
-
-        // When zoomed, center the selected node (by shifting graph container)
-        // Assuming selected node is at (targetX, targetY).
-        // Target is parent.width/2, parent.height/2. But wait, if selected node is at targetX, targetY,
-        // and we want it to move to left side or center, we offset it. Let's move it to center-left
-        property real targetXShift: {
-          if (root.isZoomed && root.currentIndex >= 0 && root.currentIndex < nodeRepeater.count) {
-            let node = nodeRepeater.itemAt(root.currentIndex);
-            if (node) {
-              return (root.width * 0.3) - (node.targetX + node.width / 2);
-            }
-          }
-          return 0;
-        }
-        property real targetYShift: {
-          if (root.isZoomed && root.currentIndex >= 0 && root.currentIndex < nodeRepeater.count) {
-            let node = nodeRepeater.itemAt(root.currentIndex);
-            if (node) {
-              return (root.height / 2) - (node.targetY + node.height / 2);
-            }
-          }
-          return 0;
-        }
-
-        x: targetXShift
-        y: targetYShift
-
-        Behavior on x {
-          NumberAnimation {
-            duration: 300
-            easing.type: Easing.OutCubic
-          }
-        }
-        Behavior on y {
-          NumberAnimation {
-            duration: 300
-            easing.type: Easing.OutCubic
-          }
-        }
-      },
       Scale {
         id: graphScale
 
@@ -203,17 +171,41 @@ FocusScope {
       }
     ]
 
+    Timer {
+      interval: 16
+      running: root.opened && root.isZoomed
+      repeat: true
+      onTriggered: {
+        if (root.currentIndex >= 0 && root.currentIndex < nodeRepeater.count) {
+          let node = nodeRepeater.itemAt(root.currentIndex);
+          if (node) {
+            graphContainer.contentX = node.targetX + node.width / 2 - graphContainer.width * 0.3;
+            graphContainer.contentY = node.targetY + node.height / 2 - graphContainer.height / 2;
+          }
+        }
+      }
+    }
+
+    // Center on PC node initially
+    Component.onCompleted: {
+      contentX = (root.mapSize - root.width) / 2;
+      contentY = (root.mapSize - root.height) / 2;
+    }
+
     WheelHandler {
       id: wheelHandler
 
       acceptedDevices: PointerDevice.Mouse
+
       onWheel: event => {
-        let delta = event.angleDelta.y / 120;
+        let wheel_delta = event.angleDelta.y / 120;
         let step = 0.1;
-        if (delta > 0) {
-          root.zoomLevel = Math.min(3.0, root.zoomLevel + step);
-        } else if (delta < 0) {
-          root.zoomLevel = Math.max(0.2, root.zoomLevel - step);
+        if (wheel_delta > 0) {
+          root.zoomLevel = Math.min(root.maxZoom, root.zoomLevel + step);
+          event.accepted = true;
+        } else if (wheel_delta < 0) {
+          root.zoomLevel = Math.max(root.minZoom, root.zoomLevel - step);
+          event.accepted = true;
         }
       }
     }
@@ -222,20 +214,16 @@ FocusScope {
       id: pinchHandler
 
       target: null // We handle zoom manually
+
       onActiveChanged: {
-        if (!active) return;
+        if (!active)
+          return;
       }
       onScaleChanged: {
-        let delta = scale - 1.0;
-        let newZoom = root.zoomLevel + delta * 0.1;
-        root.zoomLevel = Math.max(0.2, Math.min(3.0, newZoom));
+        let zoom_delta = scale - 1.0;
+        let newZoom = root.zoomLevel + zoom_delta * 0.1;
+        root.zoomLevel = Math.max(root.minZoom, Math.min(root.maxZoom, newZoom));
       }
-    }
-
-    // Center on PC node initially
-    Component.onCompleted: {
-      contentX = (root.mapSize - root.width) / 2;
-      contentY = (root.mapSize - root.height) / 2;
     }
 
     Shortcut {
