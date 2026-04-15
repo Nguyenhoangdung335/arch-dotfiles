@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import "."
 import "../../Services" as Svc
+import "../../JSUtils/Logging.js" as Log
 
 FocusScope {
   id: root
@@ -22,6 +23,43 @@ FocusScope {
   property bool isZoomed: false
   property var selectedNodeData: null
 
+  // Pannable Universe Config
+  property int mapSize: 2500
+  property int orbitDuration: 60000
+
+  // Sunflower Math Config
+  property real sunflowerC: 45 // Distance multiplier
+  property real sunflowerMinRadius: 80 // Minimum distance from center
+
+  property real globalAngleOffset: 0
+  NumberAnimation on globalAngleOffset {
+    from: 0
+    to: Math.PI * 2
+    duration: root.orbitDuration
+    loops: Animation.Infinite
+    running: root.opened && !root.isZoomed
+  }
+
+  function calculateSunflowerCoords(index, strength, maxNodes) {
+    // Golden angle in radians
+    const goldenAngle = 2.39996;
+    
+    // Angle: index * golden angle + global rotation
+    let angle = (index * goldenAngle) + root.globalAngleOffset;
+    
+    // Radius: scales with square root of index
+    let radius = root.sunflowerMinRadius + (root.sunflowerC * Math.sqrt(index));
+    
+    // Calculate final X and Y relative to map center
+    let centerX = root.mapSize / 2;
+    let centerY = root.mapSize / 2;
+    
+    return {
+      x: centerX + radius * Math.cos(angle),
+      y: centerY + radius * Math.sin(angle)
+    };
+  }
+
   clip: true
 
   onOpenedChanged: {
@@ -34,23 +72,31 @@ FocusScope {
     } else {
       currentIndex = -1;
     }
+    Log.info("radiusBase:" + radiusBase);
   }
   Keys.onPressed: event => {
     if ((event.modifiers & Qt.ControlModifier)) {
-      if (event.key === Qt.Key_N) {
+      switch (event.key) {
+      case Qt.Key_N:
         if (nodeRepeater.count > 0) {
           currentIndex = (currentIndex + 1) % nodeRepeater.count;
         }
         event.accepted = true;
-      } else if (event.key === Qt.Key_P) {
+        break;
+      case Qt.Key_P:
         if (nodeRepeater.count > 0) {
           currentIndex = (currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
         }
         event.accepted = true;
-      } else if (event.key === Qt.Key_F) {
+        break;
+      case Qt.Key_F:
         searchField.visible = true;
         searchField.forceActiveFocus();
         event.accepted = true;
+        break;
+      default:
+        Log.debug("Unhandled key: " + event.key);
+        break;
       }
     } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
       if (currentIndex >= 0 && currentIndex < nodeRepeater.count) {
@@ -101,7 +147,7 @@ FocusScope {
           if (root.isZoomed && root.currentIndex >= 0 && root.currentIndex < nodeRepeater.count) {
             let node = nodeRepeater.itemAt(root.currentIndex);
             if (node) {
-              return (root.width * 0.3) - (node.targetX + node.width / 2);
+              return (root.width * 0.3) - (node["targetX"] + node.width / 2);
             }
           }
           return 0;
@@ -110,7 +156,7 @@ FocusScope {
           if (root.isZoomed && root.currentIndex >= 0 && root.currentIndex < nodeRepeater.count) {
             let node = nodeRepeater.itemAt(root.currentIndex);
             if (node) {
-              return (root.height / 2) - (node.targetY + node.height / 2);
+              return (root.height / 2) - (node["targetY"] + node.height / 2);
             }
           }
           return 0;
@@ -217,7 +263,10 @@ FocusScope {
           return 0;
         }
         property real angle: baseAngle + angleOffset
-        property real r: root.radiusBase + (100 - strength) / 2
+        property real minRadius: 60
+        property real maxRadius: (Math.min(root.width, root.height) / 2) - 40
+        property real weakness: Math.max(0, 100 - strength) / 100.0
+        property real r: minRadius + Math.pow(weakness, 1.5) * (maxRadius - minRadius) + (index % 3) * 25
 
         ssid: modelData.ssid !== undefined ? modelData.ssid : "Unknown"
         strength: modelData.strength !== undefined ? modelData.strength : 0
@@ -242,6 +291,8 @@ FocusScope {
         onIsHoveredChanged: {
           if (isHovered && !root.isZoomed) {
             root.currentIndex = index;
+          } else if (!isHovered && !root.isZoomed && root.currentIndex === index) {
+            root.currentIndex = -1;
           }
         }
       }
@@ -287,7 +338,7 @@ FocusScope {
       if (text !== "") {
         for (let i = 0; i < nodeRepeater.count; i++) {
           let item = nodeRepeater.itemAt(i);
-          if (item && item.matchesSearch) {
+          if (item && item["matchesSearch"]) {
             root.currentIndex = i;
             break;
           }
@@ -308,7 +359,7 @@ FocusScope {
             for (let i = 0; i < nodeRepeater.count; i++) {
               let idx = (start + i) % nodeRepeater.count;
               let item = nodeRepeater.itemAt(idx);
-              if (item && item.matchesSearch) {
+              if (item && item["matchesSearch"]) {
                 root.currentIndex = idx;
                 break;
               }
@@ -321,7 +372,7 @@ FocusScope {
             for (let i = 0; i < nodeRepeater.count; i++) {
               let idx = (start - i + nodeRepeater.count) % nodeRepeater.count;
               let item = nodeRepeater.itemAt(idx);
-              if (item && item.matchesSearch) {
+              if (item && item["matchesSearch"]) {
                 root.currentIndex = idx;
                 break;
               }
