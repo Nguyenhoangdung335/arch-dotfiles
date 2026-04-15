@@ -120,15 +120,43 @@ FocusScope {
   Shortcut {
     sequence: Config.KeyBinds.networkNextNode
     onActivated: {
-      if (nodeRepeater.count > 0) root.currentIndex = (root.currentIndex + 1) % nodeRepeater.count;
-      ensureVisible(root.currentIndex);
+      if (nodeRepeater.count > 0) {
+        if (searchField.visible) {
+          let start = (root.currentIndex + 1) % nodeRepeater.count;
+          for (let i = 0; i < nodeRepeater.count; i++) {
+            let idx = (start + i) % nodeRepeater.count;
+            let item = nodeRepeater.itemAt(idx);
+            if (item && item["matchesSearch"]) {
+              root.currentIndex = idx;
+              break;
+            }
+          }
+        } else {
+          root.currentIndex = (root.currentIndex + 1) % nodeRepeater.count;
+        }
+        ensureVisible(root.currentIndex);
+      }
     }
   }
   Shortcut {
     sequence: Config.KeyBinds.networkPrevNode
     onActivated: {
-      if (nodeRepeater.count > 0) root.currentIndex = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
-      ensureVisible(root.currentIndex);
+      if (nodeRepeater.count > 0) {
+        if (searchField.visible) {
+          let start = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
+          for (let i = 0; i < nodeRepeater.count; i++) {
+            let idx = (start - i + nodeRepeater.count) % nodeRepeater.count;
+            let item = nodeRepeater.itemAt(idx);
+            if (item && item["matchesSearch"]) {
+              root.currentIndex = idx;
+              break;
+            }
+          }
+        } else {
+          root.currentIndex = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
+        }
+        ensureVisible(root.currentIndex);
+      }
     }
   }
   Shortcut {
@@ -261,33 +289,6 @@ FocusScope {
         required property var modelData
         required property int index
         property bool matchesSearch: root.searchQuery === "" || ssid.toLowerCase().indexOf(root.searchQueryLower) !== -1
-        property real baseAngle: (index / Math.max(1, nodeRepeater.count)) * 2 * Math.PI - Math.PI / 2
-        property real angleOffset: {
-          if (root.currentIndex === -1 || nodeRepeater.count < 3)
-            return 0;
-
-          let dist = Math.abs(index - root.currentIndex);
-          if (dist > nodeRepeater.count / 2) {
-            dist = nodeRepeater.count - dist;
-          }
-
-          if (dist === 1) {
-            let sign = (index > root.currentIndex) ? 1 : -1;
-
-            if (index === 0 && root.currentIndex === nodeRepeater.count - 1)
-              sign = 1;
-            if (index === nodeRepeater.count - 1 && root.currentIndex === 0)
-              sign = -1;
-
-            return sign * 0.2;
-          }
-          return 0;
-        }
-        property real angle: baseAngle + angleOffset
-        property real minRadius: 60
-        property real maxRadius: (Math.min(root.width, root.height) / 2) - 40
-        property real weakness: Math.max(0, 100 - strength) / 100.0
-        property real r: minRadius + Math.pow(weakness, 1.5) * (maxRadius - minRadius) + (index % 3) * 25
 
         ssid: modelData.ssid !== undefined ? modelData.ssid : "Unknown"
         strength: modelData.strength !== undefined ? modelData.strength : 0
@@ -374,34 +375,6 @@ FocusScope {
         root.searchQuery = "";
         root.forceActiveFocus();
         event.accepted = true;
-      } else if ((event.modifiers & Qt.ControlModifier)) {
-        if (event.key === Qt.Key_N) {
-          if (nodeRepeater.count > 0) {
-            let start = (root.currentIndex + 1) % nodeRepeater.count;
-            for (let i = 0; i < nodeRepeater.count; i++) {
-              let idx = (start + i) % nodeRepeater.count;
-              let item = nodeRepeater.itemAt(idx);
-              if (item && item["matchesSearch"]) {
-                root.currentIndex = idx;
-                break;
-              }
-            }
-          }
-          event.accepted = true;
-        } else if (event.key === Qt.Key_P) {
-          if (nodeRepeater.count > 0) {
-            let start = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
-            for (let i = 0; i < nodeRepeater.count; i++) {
-              let idx = (start - i + nodeRepeater.count) % nodeRepeater.count;
-              let item = nodeRepeater.itemAt(idx);
-              if (item && item["matchesSearch"]) {
-                root.currentIndex = idx;
-                break;
-              }
-            }
-          }
-          event.accepted = true;
-        }
       }
     }
   }
