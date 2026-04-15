@@ -17,9 +17,6 @@ FocusScope {
   property string searchQuery: ""
   property string searchQueryLower: searchQuery.toLowerCase()
 
-  // Graph configuration
-  property real radiusBase: Math.min(width, height) / 3
-
   // Zoom state
   property bool isZoomed: false
   property var selectedNodeData: null
@@ -41,7 +38,7 @@ FocusScope {
     running: root.opened && !root.isZoomed
   }
 
-  function calculateSunflowerCoords(index, strength, maxNodes) {
+  function calculateSunflowerCoords(index) {
     // Golden angle in radians
     const goldenAngle = 2.39996;
     
@@ -73,7 +70,6 @@ FocusScope {
     } else {
       currentIndex = -1;
     }
-    Log.info("radiusBase:" + radiusBase);
   }
   Keys.onPressed: event => {
     if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
@@ -126,7 +122,7 @@ FocusScope {
           for (let i = 0; i < nodeRepeater.count; i++) {
             let idx = (start + i) % nodeRepeater.count;
             let item = nodeRepeater.itemAt(idx);
-            if (item && item["matchesSearch"]) {
+            if (item && item.matchesSearch) {
               root.currentIndex = idx;
               break;
             }
@@ -147,7 +143,7 @@ FocusScope {
           for (let i = 0; i < nodeRepeater.count; i++) {
             let idx = (start - i + nodeRepeater.count) % nodeRepeater.count;
             let item = nodeRepeater.itemAt(idx);
-            if (item && item["matchesSearch"]) {
+            if (item && item.matchesSearch) {
               root.currentIndex = idx;
               break;
             }
@@ -181,8 +177,10 @@ FocusScope {
   }
 
     // Center on PC node initially
-    contentX: (root.mapSize - width) / 2
-    contentY: (root.mapSize - height) / 2
+    Component.onCompleted: {
+      contentX = (root.mapSize - root.width) / 2;
+      contentY = (root.mapSize - root.height) / 2;
+    }
 
     transform: [
       Translate {
@@ -196,7 +194,7 @@ FocusScope {
           if (root.isZoomed && root.currentIndex >= 0 && root.currentIndex < nodeRepeater.count) {
             let node = nodeRepeater.itemAt(root.currentIndex);
             if (node) {
-              return (root.width * 0.3) - (node["targetX"] + node.width / 2);
+              return (root.width * 0.3) - (node.targetX + node.width / 2);
             }
           }
           return 0;
@@ -205,7 +203,7 @@ FocusScope {
           if (root.isZoomed && root.currentIndex >= 0 && root.currentIndex < nodeRepeater.count) {
             let node = nodeRepeater.itemAt(root.currentIndex);
             if (node) {
-              return (root.height / 2) - (node["targetY"] + node.height / 2);
+              return (root.height / 2) - (node.targetY + node.height / 2);
             }
           }
           return 0;
@@ -286,18 +284,17 @@ FocusScope {
       delegate: NetworkNode {
         id: networkNode
 
-        required property var modelData
+        required property string ssid
+        required property int strength
+        required property bool connected
         required property int index
         property bool matchesSearch: root.searchQuery === "" || ssid.toLowerCase().indexOf(root.searchQueryLower) !== -1
 
-        ssid: modelData.ssid !== undefined ? modelData.ssid : "Unknown"
-        strength: modelData.strength !== undefined ? modelData.strength : 0
-        connected: modelData.connected !== undefined ? modelData.connected : false
-        isCurrent: modelData.connected
+        isCurrent: connected
         opened: root.opened
         isFocused: index === root.currentIndex
         opacity: opened ? (matchesSearch ? 1.0 : 0.2) : 0.0
-        property var coords: root.calculateSunflowerCoords(index, strength, nodeRepeater.count)
+        property point coords: root.calculateSunflowerCoords(index)
         targetX: coords.x - width / 2
         targetY: coords.y - height / 2
         z: isFocused || isHovered ? 5 : 1
@@ -361,7 +358,7 @@ FocusScope {
       if (text !== "") {
         for (let i = 0; i < nodeRepeater.count; i++) {
           let item = nodeRepeater.itemAt(i);
-          if (item && item["matchesSearch"]) {
+          if (item && item.matchesSearch) {
             root.currentIndex = i;
             break;
           }
