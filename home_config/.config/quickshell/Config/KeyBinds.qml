@@ -23,4 +23,9 @@ QtObject {
     
     property string sidebarClose: "Escape"
     property string sidebarCloseAlt: "q"
+
+    // Network Widget Local Keybinds
+    property string networkNextNode: "Ctrl+N"
+    property string networkPrevNode: "Ctrl+P"
+    property string networkSearch: "Ctrl+F"
 }
