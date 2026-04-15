@@ -130,10 +130,18 @@ FocusScope {
     }
   }
 
-  Item {
+  Flickable {
     id: graphContainer
 
     anchors.fill: parent
+    contentWidth: root.mapSize
+    contentHeight: root.mapSize
+    interactive: true
+    clip: true
+
+    // Center on PC node initially
+    contentX: (root.mapSize - width) / 2
+    contentY: (root.mapSize - height) / 2
 
     transform: [
       Translate {
@@ -217,8 +225,8 @@ FocusScope {
     PCNode {
       id: pcNode
 
-      x: parent.width / 2 - width / 2
-      y: parent.height / 2 - height / 2
+      x: root.mapSize / 2 - width / 2
+      y: root.mapSize / 2 - height / 2
       z: 10
 
       onConnectRequested: (ssid, password) => {
@@ -275,8 +283,9 @@ FocusScope {
         opened: root.opened
         isFocused: index === root.currentIndex
         opacity: opened ? (matchesSearch ? 1.0 : 0.2) : 0.0
-        targetX: parent.width / 2 + r * Math.cos(angle) - width / 2
-        targetY: parent.height / 2 + r * Math.sin(angle) - height / 2
+        property var coords: root.calculateSunflowerCoords(index, strength, nodeRepeater.count)
+        targetX: coords.x - width / 2
+        targetY: coords.y - height / 2
         z: isFocused || isHovered ? 5 : 1
 
         onClicked: {
