@@ -206,7 +206,7 @@
       "temperature": 0.3,
       "color": "#ffea98",
       "permission": {
-        "read": "ask",
+        "read": "allow",
         "glob": "allow",
         "grep": "allow",
         "edit": "deny",
@@ -265,12 +265,15 @@
         "bash": {
           "*": "ask",
           "cargo search *": "allow",
+          "cat *": "allow",
+          "mkdir -p .specs/*": "allow",
+          "mkdir -p ./.specs/*": "allow",
         },
         "skill": {
+          "*": "allow",
           "brainstorming": "allow",
           "writing-plans": "allow",
           "using-superpowers": "allow",
-          "*": "allow",
         },
       },
       "tools": {
@@ -292,17 +295,17 @@
         "edit": "ask",
         "write": "ask",
         "bash": {
+          "*": "ask",
           "cargo test *": "allow",
           "cargo check *": "allow",
           "git status *": "allow",
-          "*": "ask",
         },
         "skill": {
+          "*": "allow",
           "test-driven-development": "allow",
           "verification-before-completion": "allow",
           "code-review": "allow",
           "using-superpowers": "allow",
-          "*": "allow",
         },
       },
       "tools": {
@@ -323,6 +326,7 @@
         "edit": "deny",
         "write": "deny",
         "bash": {
+          "*": "ask",
           "git status *": "allow",
           "git diff *": "allow",
           "git log *": "allow",
@@ -330,13 +334,12 @@
           "cargo fmt --check *": "allow",
           "cargo check *": "allow",
           "cat *": "allow",
-          "*": "ask",
         },
         "skill": {
+          "*": "allow",
           "code-review": "allow",
           "verification-before-completion": "allow",
           "using-superpowers": "allow",
-          "*": "allow",
         },
       },
       "tools": {
@@ -356,18 +359,18 @@
         "edit": "deny",
         "write": "deny",
         "bash": {
+          "*": "ask",
           "git status *": "allow",
           "git diff *": "allow",
           "cargo check *": "allow",
           "cargo audit *": "allow",
           "cargo tree *": "allow",
-          "*": "ask",
         },
         "skill": {
+          "*": "allow",
           "code-review": "allow",
           "verification-before-completion": "allow",
           "using-superpowers": "allow",
-          "*": "allow",
         },
       },
       "tools": {
@@ -382,7 +385,7 @@
       "temperature": 0.3,
       "color": "#ffea98",
       "permission": {
-        "read": "ask",
+        "read": "allow",
         "glob": "allow",
         "grep": "allow",
         "edit": "deny",
@@ -441,10 +444,10 @@
           "*": "ask",
         },
         "skill": {
+          "*": "allow",
           "brainstorming": "allow",
           "writing-plans": "allow",
           "using-superpowers": "allow",
-          "*": "allow",
         },
       },
       "tools": {
@@ -468,13 +471,13 @@
           "*": "allow",
         },
         "skill": {
+          "*": "allow",
           "test-driven-development": "allow",
           "verification-before-completion": "allow",
           "code-review": "allow",
           "systematic-debugging": "allow",
           "brainstorming": "allow",
           "using-superpowers": "allow",
-          "*": "allow",
         },
       },
       "tools": {
@@ -498,10 +501,10 @@
           "cargo check *": "allow",
         },
         "skill": {
+          "*": "allow",
           "systematic-debugging": "allow",
           "verification-before-completion": "allow",
           "using-superpowers": "allow",
-          "*": "allow",
         },
       },
       "tools": {
@@ -521,10 +524,10 @@
         "edit": "deny",
         "write": "deny",
         "bash": {
+          "*": "deny",
           "git status *": "allow",
           "git log *": "allow",
           "git status *": "allow",
-          "*": "deny",
         },
         "skill": {
           "*": "deny",
@@ -548,6 +551,7 @@
         "edit": "deny",
         "write": "deny",
         "bash": {
+          "*": "ask",
           "git status *": "allow",
           "git diff *": "allow",
           "git log *": "allow",
@@ -555,13 +559,12 @@
           "cargo fmt --check *": "allow",
           "cargo check *": "allow",
           "cat *": "allow",
-          "*": "ask",
         },
         "skill": {
+          "*": "allow",
           "code-review": "allow",
           "verification-before-completion": "allow",
           "using-superpowers": "allow",
-          "*": "allow",
         },
       },
       "tools": {
@@ -582,17 +585,17 @@
         "edit": "ask",
         "write": "ask",
         "bash": {
+          "*": "ask",
           "cargo test *": "allow",
           "cargo check *": "allow",
           "git status *": "allow",
-          "*": "ask",
         },
         "skill": {
+          "*": "allow",
           "test-driven-development": "allow",
           "verification-before-completion": "allow",
           "code-review": "allow",
           "using-superpowers": "allow",
-          "*": "allow",
         },
       },
       "tools": {
@@ -612,18 +615,18 @@
         "edit": "deny",
         "write": "deny",
         "bash": {
+          "*": "ask",
           "git status *": "allow",
           "git diff *": "allow",
           "cargo check *": "allow",
           "cargo audit *": "allow",
           "cargo tree *": "allow",
-          "*": "ask",
         },
         "skill": {
+          "*": "allow",
           "code-review": "allow",
           "verification-before-completion": "allow",
           "using-superpowers": "allow",
-          "*": "allow",
         },
       },
       "tools": {

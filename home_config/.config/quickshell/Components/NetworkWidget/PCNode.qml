@@ -11,12 +11,6 @@ Rectangle {
   property bool isSearching: false
   property string targetSSID: ""
 
-  onIsSearchingChanged: {
-    if (!isSearching) {
-      searchField.text = "";
-    }
-  }
-
   signal connectRequested(string ssid, string password)
   signal inputCancelled
   signal searchCancelled
@@ -52,6 +46,15 @@ Rectangle {
   Behavior on border.color {
     ColorAnimation {
       duration: 300
+    }
+  }
+
+  onIsSearchingChanged: {
+    if (!isSearching) {
+      searchField.text = "";
+      searchField.clear();
+      searchField.focus = false;
+      root.forceActiveFocus();
     }
   }
 
