@@ -7,22 +7,39 @@ Rectangle {
   id: root
 
   property bool isInputtingPassword: false
+  property bool isSearching: false
   property string targetSSID: ""
+
+  onIsSearchingChanged: {
+    if (!isSearching) {
+      searchField.text = "";
+    }
+  }
 
   signal connectRequested(string ssid, string password)
   signal inputCancelled
+  signal searchCancelled
+  signal searchAccepted
+  signal searchQueryChanged(string query)
 
   function requestPassword(ssid: string) {
     targetSSID = ssid;
+    isSearching = false;
     isInputtingPassword = true;
     passwordField.forceActiveFocus();
   }
 
-  width: isInputtingPassword ? 220 : 60
+  function focusSearch() {
+    isInputtingPassword = false;
+    isSearching = true;
+    searchField.forceActiveFocus();
+  }
+
+  width: (isInputtingPassword || isSearching) ? 220 : 60
   height: 60
   radius: height / 2
   color: "#2E3440"
-  border.color: isInputtingPassword ? "#A3BE8C" : "#88C0D0"
+  border.color: isInputtingPassword ? "#A3BE8C" : (isSearching ? "#EBCB8B" : "#88C0D0")
   border.width: 2
 
   Behavior on width {
@@ -44,7 +61,7 @@ Rectangle {
     text: "PC"
     color: "#ECEFF4"
     font.bold: true
-    opacity: root.isInputtingPassword ? 0.0 : 1.0
+    opacity: (root.isInputtingPassword || root.isSearching) ? 0.0 : 1.0
 
     Behavior on opacity {
       NumberAnimation {
@@ -88,6 +105,46 @@ Rectangle {
         root.inputCancelled();
         text = "";
         event.accepted = true;
+      }
+    }
+  }
+
+  TextField {
+    id: searchField
+
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.leftMargin: 20
+    anchors.rightMargin: 20
+    anchors.verticalCenter: parent.verticalCenter
+    visible: root.isSearching
+    opacity: root.isSearching ? 1.0 : 0.0
+    placeholderText: "Search SSIDs..."
+    color: "#ECEFF4"
+
+    Behavior on opacity {
+      NumberAnimation {
+        duration: 300
+      }
+    }
+    background: Rectangle {
+      color: Qt.rgba(1, 1, 1, 0.05)
+      radius: 4
+    }
+
+    onTextChanged: {
+      root.searchQueryChanged(text);
+    }
+    Keys.onPressed: event => {
+      if (event.key === Qt.Key_Escape) {
+        root.isSearching = false;
+        text = "";
+        root.searchCancelled();
+        event.accepted = true;
+      } else if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
+        event.accepted = true;
+        searchField.focus = false;
+        root.searchAccepted();
       }
     }
   }

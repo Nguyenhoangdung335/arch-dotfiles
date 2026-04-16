@@ -18,8 +18,8 @@ PanelWindow {
   property bool isAnimating: slideAnim.running
 
   // Widget dimensions
-  readonly property int widgetWidth: 1200
-  readonly property int widgetHeight: 1200
+  readonly property int widgetWidth: 650
+  readonly property int widgetHeight: 550
 
   // Toggle Functions
   function toggle() {
@@ -132,16 +132,11 @@ PanelWindow {
   }
 
   // Keyboard navigation
-  Item {
-    anchors.fill: parent
-    focus: root.opened
+  Shortcut {
+    sequence: Cfg.KeyBinds.closeWidget
+    enabled: root.opened && !graphLayout.hasActiveOverlay
 
-    Shortcut {
-      sequence: Cfg.KeyBinds.closeWidget
-      enabled: root.opened
-
-      onActivated: root.close()
-    }
+    onActivated: root.close()
   }
 
   // GlobalShortcut

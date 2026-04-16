@@ -15,16 +15,19 @@ FocusScope {
   property int currentIndex: -1
   property string searchQuery: ""
   property string searchQueryLower: searchQuery.toLowerCase()
+  property double lastKeyboardNavTime: 0
 
   // Zoom state
   property bool isZoomed: false
+  property bool hasActiveOverlay: pcNode.isSearching || isZoomed
   property var selectedNodeData: null
   property real minZoom: 0.75
   property real maxZoom: 3.0
 
   // Pannable Universe Config
-  property int mapSize: (sunflowerMinRadius + sunflowerC * Math.sqrt(Math.max(1, accessPointsModel ? accessPointsModel.count : 1)) + 300) * 2
-  property int orbitDuration: 300000
+  property int offsetMaxPannable: 100
+  property int mapSize: (sunflowerMinRadius + sunflowerC * Math.sqrt(Math.max(1, accessPointsModel ? accessPointsModel.count : 1)) + offsetMaxPannable) * 2
+  property int orbitDurationPerCycle: 300000
 
   // Sunflower Math Config
   property real sunflowerC: 45 // Distance multiplier
@@ -59,22 +62,22 @@ FocusScope {
   NumberAnimation on globalAngleOffset {
     from: 0
     to: Math.PI * 2
-    duration: root.orbitDuration
+    duration: root.orbitDurationPerCycle
     loops: Animation.Infinite
     running: root.opened
   }
   Behavior on spreadFactor {
     SpringAnimation {
       spring: 2.0
-      damping: 0.15
+      velocity: 50.0
+      damping: 0.25
     }
   }
 
   onOpenedChanged: {
     if (opened) {
       root.forceActiveFocus();
-      searchField.visible = false;
-      searchField.text = "";
+      pcNode.isSearching = false;
       searchQuery = "";
       isZoomed = false;
       selectedNodeData = null;
@@ -82,7 +85,7 @@ FocusScope {
       graphContainer.contentX = (root.mapSize * root.zoomLevel - graphContainer.width) / 2;
       graphContainer.contentY = (root.mapSize * root.zoomLevel - graphContainer.height) / 2;
     } else {
-      searchField.visible = false;
+      pcNode.isSearching = false;
       currentIndex = -1;
       root.zoomLevel = 1.0;
       graphContainer.contentX = (root.mapSize * root.zoomLevel - graphContainer.width) / 2;
@@ -110,12 +113,6 @@ FocusScope {
       if (root.isZoomed) {
         root.isZoomed = false;
         root.selectedNodeData = null;
-        root.forceActiveFocus();
-        event.accepted = true;
-      } else if (searchField.visible) {
-        searchField.visible = false;
-        searchField.text = "";
-        searchQuery = "";
         root.forceActiveFocus();
         event.accepted = true;
       }
@@ -230,8 +227,9 @@ FocusScope {
       sequence: Config.KeyBinds.networkNextNode
 
       onActivated: {
+        root.lastKeyboardNavTime = Date.now();
         if (nodeRepeater.count > 0) {
-          if (searchField.visible) {
+          if (pcNode.isSearching) {
             let start = (root.currentIndex + 1) % nodeRepeater.count;
             for (let i = 0; i < nodeRepeater.count; i++) {
               let idx = (start + i) % nodeRepeater.count;
@@ -253,8 +251,9 @@ FocusScope {
       sequence: Config.KeyBinds.networkPrevNode
 
       onActivated: {
+        root.lastKeyboardNavTime = Date.now();
         if (nodeRepeater.count > 0) {
-          if (searchField.visible) {
+          if (pcNode.isSearching) {
             let start = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
             for (let i = 0; i < nodeRepeater.count; i++) {
               let idx = (start - i + nodeRepeater.count) % nodeRepeater.count;
@@ -276,8 +275,13 @@ FocusScope {
       sequence: Config.KeyBinds.networkSearch
 
       onActivated: {
-        searchField.visible = true;
-        searchField.forceActiveFocus();
+        if (pcNode.isSearching) {
+          pcNode.isSearching = false;
+          root.searchQuery = "";
+          root.forceActiveFocus();
+        } else {
+          pcNode.focusSearch();
+        }
       }
     }
 
@@ -303,6 +307,39 @@ FocusScope {
         root.forceActiveFocus();
       }
       onInputCancelled: root.forceActiveFocus()
+      onSearchCancelled: {
+        root.searchQuery = "";
+        root.forceActiveFocus();
+      }
+      onSearchQueryChanged: query => {
+        root.searchQuery = query;
+        if (query !== "") {
+          for (let i = 0; i < nodeRepeater.count; i++) {
+            let item = nodeRepeater.itemAt(i);
+            if (item && item.matchesSearch) {
+              root.currentIndex = i;
+              break;
+            }
+          }
+        }
+      }
+      onSearchAccepted: {
+        if (currentIndex >= 0 && currentIndex < nodeRepeater.count) {
+          let item = nodeRepeater.itemAt(currentIndex);
+          if (item) {
+            root.isZoomed = true;
+            let modelData = root.accessPointsModel.get(currentIndex);
+            if (modelData) {
+              root.selectedNodeData = {
+                ssid: modelData.ssid !== undefined ? modelData.ssid : "Unknown",
+                strength: modelData.strength !== undefined ? modelData.strength : 0,
+                connected: modelData.connected !== undefined ? modelData.connected : false
+              };
+            }
+          }
+        }
+        root.forceActiveFocus();
+      }
     }
 
     // Repeater for Network Nodes
@@ -340,6 +377,7 @@ FocusScope {
           };
         }
         onIsHoveredChanged: {
+          if (Date.now() - root.lastKeyboardNavTime < 500) return; // Ignore hover right after keypress
           if (isHovered && !root.isZoomed) {
             root.currentIndex = index;
           } else if (!isHovered && !root.isZoomed && root.currentIndex === index) {
@@ -376,37 +414,5 @@ FocusScope {
     }
   }
 
-  // Search Field Overlay
-  TextField {
-    id: searchField
 
-    visible: false
-    anchors.top: parent.top
-    anchors.topMargin: 20
-    anchors.horizontalCenter: parent.horizontalCenter
-    width: parent.width * 0.6
-    placeholderText: "Search SSIDs... (Esc to close)"
-
-    onTextChanged: {
-      root.searchQuery = text;
-      if (text !== "") {
-        for (let i = 0; i < nodeRepeater.count; i++) {
-          let item = nodeRepeater.itemAt(i);
-          if (item && item.matchesSearch) {
-            root.currentIndex = i;
-            break;
-          }
-        }
-      }
-    }
-    Keys.onPressed: event => {
-      if (event.key === Qt.Key_Escape) {
-        visible = false;
-        text = "";
-        root.searchQuery = "";
-        root.forceActiveFocus();
-        event.accepted = true;
-      }
-    }
-  }
 }
