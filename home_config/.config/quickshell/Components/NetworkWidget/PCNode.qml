@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
+import "../../Themes" as Th
 
 Rectangle {
   id: root
@@ -38,8 +39,8 @@ Rectangle {
   width: (isInputtingPassword || isSearching) ? 220 : 60
   height: 60
   radius: height / 2
-  color: "#2E3440"
-  border.color: isInputtingPassword ? "#A3BE8C" : (isSearching ? "#EBCB8B" : "#88C0D0")
+  color: Th.Theme.surface
+  border.color: isInputtingPassword ? Th.Theme.accent : (isSearching ? Th.Theme.primary : Qt.rgba(Th.Theme.fg.r, Th.Theme.fg.g, Th.Theme.fg.b, 0.2))
   border.width: 2
 
   Behavior on width {
@@ -59,7 +60,7 @@ Rectangle {
 
     anchors.centerIn: parent
     text: "PC"
-    color: "#ECEFF4"
+    color: Th.Theme.fg
     font.bold: true
     opacity: (root.isInputtingPassword || root.isSearching) ? 0.0 : 1.0
 
@@ -82,7 +83,7 @@ Rectangle {
     opacity: root.isInputtingPassword ? 1.0 : 0.0
     placeholderText: "Password for " + root.targetSSID
     echoMode: TextInput.Password
-    color: "#ECEFF4"
+    color: Th.Theme.fg
 
     Behavior on opacity {
       NumberAnimation {
@@ -120,7 +121,7 @@ Rectangle {
     visible: root.isSearching
     opacity: root.isSearching ? 1.0 : 0.0
     placeholderText: "Search SSIDs..."
-    color: "#ECEFF4"
+    color: Th.Theme.fg
 
     Behavior on opacity {
       NumberAnimation {

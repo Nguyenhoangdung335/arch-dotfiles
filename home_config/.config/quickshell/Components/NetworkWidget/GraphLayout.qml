@@ -16,6 +16,14 @@ FocusScope {
   property string searchQuery: ""
   property string searchQueryLower: searchQuery.toLowerCase()
   property double lastKeyboardNavTime: 0
+  property bool keyboardNavActive: false
+
+  Timer {
+    id: keyboardNavTimer
+
+    interval: 500
+    onTriggered: root.keyboardNavActive = false
+  }
 
   // Zoom state
   property bool isZoomed: false
@@ -31,7 +39,14 @@ FocusScope {
 
   // Sunflower Math Config
   property real sunflowerC: 45 // Distance multiplier
-  property real sunflowerMinRadius: 80 // Minimum distance from center
+  property real sunflowerMinRadius: 80 + Math.max(0, (pcNode.width - 60) / 2) // Minimum distance from center
+
+  Behavior on sunflowerMinRadius {
+    NumberAnimation {
+      duration: 300
+      easing.type: Easing.OutBack
+    }
+  }
 
   property real globalAngleOffset: 0
   property real spreadFactor: opened ? 1.0 : 0.0
@@ -228,6 +243,8 @@ FocusScope {
 
       onActivated: {
         root.lastKeyboardNavTime = Date.now();
+        root.keyboardNavActive = true;
+        keyboardNavTimer.restart();
         if (nodeRepeater.count > 0) {
           if (pcNode.isSearching) {
             let start = (root.currentIndex + 1) % nodeRepeater.count;
@@ -252,6 +269,8 @@ FocusScope {
 
       onActivated: {
         root.lastKeyboardNavTime = Date.now();
+        root.keyboardNavActive = true;
+        keyboardNavTimer.restart();
         if (nodeRepeater.count > 0) {
           if (pcNode.isSearching) {
             let start = (root.currentIndex - 1 + nodeRepeater.count) % nodeRepeater.count;
@@ -362,10 +381,11 @@ FocusScope {
         isCurrent: modelData.connected
         opened: root.opened
         isFocused: index === root.currentIndex
+        keyboardNavActive: root.keyboardNavActive
         opacity: opened ? (matchesSearch ? 1.0 : 0.2) : 0.0
         targetX: coords.x - width / 2
         targetY: coords.y - height / 2
-        z: isFocused || isHovered ? 5 : 1
+        z: isFocused || effectivelyHovered ? 5 : 1
 
         onClicked: {
           root.currentIndex = index;
@@ -377,7 +397,7 @@ FocusScope {
           };
         }
         onIsHoveredChanged: {
-          if (Date.now() - root.lastKeyboardNavTime < 500) return; // Ignore hover right after keypress
+          if (root.keyboardNavActive) return; // Ignore hover right after keypress
           if (isHovered && !root.isZoomed) {
             root.currentIndex = index;
           } else if (!isHovered && !root.isZoomed && root.currentIndex === index) {

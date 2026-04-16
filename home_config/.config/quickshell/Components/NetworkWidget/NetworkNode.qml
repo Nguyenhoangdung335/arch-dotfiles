@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "../../Themes" as Th
 
 Rectangle {
   id: root
@@ -13,17 +14,19 @@ Rectangle {
   property bool connected: false
   property bool isCurrent: false
   property bool isFocused: false
-  property bool isHovered: false
+  readonly property bool isHovered: hoverHandler.hovered
+  property bool keyboardNavActive: false
+  property bool effectivelyHovered: isHovered && !keyboardNavActive
 
   signal clicked
 
-  width: isCurrent ? 50 : (isFocused || isHovered ? 45 : 40)
+  width: isCurrent ? 50 : (isFocused || effectivelyHovered ? 45 : 40)
   height: width
   radius: width / 2
-  color: isCurrent ? "#A3BE8C" : (isFocused || isHovered ? "#5E81AC" : "#4C566A")
-  border.color: isCurrent ? "#8FBCBB" : (isFocused || isHovered ? "#81A1C1" : "#3B4252")
-  border.width: isFocused || isHovered ? 3 : 2
-  scale: isFocused || isHovered ? 1.2 : 1.0
+  color: isCurrent ? Th.Theme.accent : (isFocused || effectivelyHovered ? Th.Theme.primary : Th.Theme.surface)
+  border.color: isCurrent ? Qt.rgba(Th.Theme.accent.r, Th.Theme.accent.g, Th.Theme.accent.b, 0.8) : (isFocused || effectivelyHovered ? Qt.rgba(Th.Theme.primary.r, Th.Theme.primary.g, Th.Theme.primary.b, 0.8) : Qt.rgba(Th.Theme.fg.r, Th.Theme.fg.g, Th.Theme.fg.b, 0.2))
+  border.width: isFocused || effectivelyHovered ? 3 : 2
+  scale: isFocused || effectivelyHovered ? 1.2 : 1.0
   x: targetX
   y: targetY
 
@@ -47,8 +50,6 @@ Rectangle {
     id: hoverHandler
 
     cursorShape: Qt.PointingHandCursor
-
-    onHoveredChanged: root.isHovered = hoverHandler.hovered
   }
 
   MouseArea {
@@ -64,7 +65,7 @@ Rectangle {
     anchors.topMargin: 4
     anchors.horizontalCenter: parent.horizontalCenter
     text: root.ssid
-    color: "#ECEFF4"
+    color: Th.Theme.fg
     font.pixelSize: 12
     visible: root.opened
   }
