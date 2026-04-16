@@ -1,24 +1,12 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
 import "."
 import "../../Services" as Svc
 import "../../Config" as Config
 
 FocusScope {
   id: root
-
-  HoverHandler {
-    id: globalMouseTracker
-    acceptedDevices: PointerDevice.Mouse
-    property point currentPos: point.position
-    onCurrentPosChanged: {
-      if (root.usingKeyboardNav) {
-        root.usingKeyboardNav = false
-      }
-    }
-  }
 
   // Properties to control the layout
   property bool opened: false
@@ -44,7 +32,7 @@ FocusScope {
 
   // Sunflower Math Config
   property real sunflowerC: 45 // Distance multiplier
-  property real sunflowerMinRadius: 80 + Math.max(0, (pcNode.width - 60) / 2) // Minimum distance from center
+  property real sunflowerMinRadius: 80 + Math.max(0, (pcNode.width - 60) / 2.2) // Minimum distance from center
 
   property real globalAngleOffset: 0
   property real spreadFactor: opened ? 1.0 : 0.0
@@ -136,6 +124,20 @@ FocusScope {
     }
   }
 
+  HoverHandler {
+    id: globalMouseTracker
+
+    property point currentPos: point.position
+
+    acceptedDevices: PointerDevice.Mouse
+
+    onCurrentPosChanged: {
+      if (root.usingKeyboardNav) {
+        root.usingKeyboardNav = false;
+      }
+    }
+  }
+
   Flickable {
     id: graphContainer
 
@@ -162,6 +164,7 @@ FocusScope {
 
     Behavior on contentX {
       enabled: !graphContainer.dragging && !graphContainer.flicking && !root.bypassBehavior
+
       NumberAnimation {
         duration: 300
         easing.type: Easing.OutCubic
@@ -169,12 +172,12 @@ FocusScope {
     }
     Behavior on contentY {
       enabled: !graphContainer.dragging && !graphContainer.flicking && !root.bypassBehavior
+
       NumberAnimation {
         duration: 300
         easing.type: Easing.OutCubic
       }
     }
-
     contentItem.transform: [
       Scale {
         id: graphScale
@@ -341,16 +344,15 @@ FocusScope {
         if (isSearching) {
           root.currentIndex = -1;
         }
-        
+
         let targetPcWidth = isSearching ? 220 : 60;
         let targetMinRadius = 80 + Math.max(0, (targetPcWidth - 60) / 2);
         let nodeCount = root.accessPointsModel ? root.accessPointsModel.count : 1;
         let targetMapSize = Math.floor((targetMinRadius + root.sunflowerC * Math.sqrt(Math.max(1, nodeCount)) + root.offsetMaxPannable) * 2);
-        
+
         graphContainer.contentX = (targetMapSize * root.zoomLevel - graphContainer.width) / 2;
         graphContainer.contentY = (targetMapSize * root.zoomLevel - graphContainer.height) / 2;
       }
-
       onConnectRequested: (ssid, password) => {
         Svc.NetworkService.connectToNetwork(ssid, password);
         root.forceActiveFocus();
@@ -373,11 +375,11 @@ FocusScope {
         }
       }
       onSearchAccepted: {
-        if (currentIndex >= 0 && currentIndex < nodeRepeater.count) {
-          let item = nodeRepeater.itemAt(currentIndex);
+        if (root.currentIndex >= 0 && root.currentIndex < nodeRepeater.count) {
+          let item = nodeRepeater.itemAt(root.currentIndex);
           if (item) {
             root.isZoomed = true;
-            let modelData = root.accessPointsModel.get(currentIndex);
+            let modelData = root.accessPointsModel.get(root.currentIndex);
             if (modelData) {
               root.selectedNodeData = {
                 ssid: modelData.ssid !== undefined ? modelData.ssid : "Unknown",
@@ -427,7 +429,8 @@ FocusScope {
           };
         }
         onIsHoveredChanged: {
-          if (root.usingKeyboardNav) return; // Ignore hover right after keypress
+          if (root.usingKeyboardNav)
+            return; // Ignore hover right after keypress
           if (isHovered && !root.isZoomed) {
             root.currentIndex = index;
           } else if (!isHovered && !root.isZoomed && root.currentIndex === index) {
@@ -463,6 +466,4 @@ FocusScope {
       }
     }
   }
-
-
 }
