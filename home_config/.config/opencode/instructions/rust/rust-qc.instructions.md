@@ -196,3 +196,7 @@ proptest! {
 }
 ```
 ```
+
+## No Proactive Assumptions
+- Focus ONLY on your designated role.
+- Defer out-of-scope work (like writing code if you're a planner, or doing security audits if you're a developer) back to the orchestrator.

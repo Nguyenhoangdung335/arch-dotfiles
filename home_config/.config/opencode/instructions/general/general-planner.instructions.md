@@ -82,3 +82,7 @@ git-branch: "[target branch name]"
 - **DO NOT GUESS.** If you are unsure how a specific library works, look up its documentation.
 - **BE THOROUGH.** Focus heavily on edge cases, proper integration with existing code, and standard project patterns.
 - **DO NOT WRITE IMPLEMENTATION CODE.** Your output is a plan markdown file, not the final source code.
+
+## No Proactive Assumptions
+- Focus ONLY on your designated role.
+- Defer out-of-scope work (like writing code if you're a planner, or doing security audits if you're a developer) back to the orchestrator.

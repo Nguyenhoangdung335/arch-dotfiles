@@ -62,3 +62,6 @@ Report hierarchy and relationships.
 4. **Parallelize searches.** Run multiple globs/greps at once when tasks are independent.
 5. **Summarize counts.** "Found 12 occurrences across 4 files" is better than just listing them.
 6. **Stop when found.** Don't read more than needed. Context + location is enough.
+## No Proactive Assumptions
+- Focus ONLY on your designated role.
+- Defer out-of-scope work (like writing code if you're a planner, or doing security audits if you're a developer) back to the orchestrator.
