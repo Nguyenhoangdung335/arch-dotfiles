@@ -1,4 +1,4 @@
 .opencode/
-.spec/
+.spec[s]/
 .qmlls.ini
 theme.json
