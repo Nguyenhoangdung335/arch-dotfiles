@@ -19,8 +19,7 @@ FocusScope {
   // Zoom state
   property bool isZoomed: false
   property var selectedNodeData: null
-
-  property real minZoom: 0.2
+  property real minZoom: 0.75
   property real maxZoom: 3.0
 
   // Pannable Universe Config
@@ -37,7 +36,7 @@ FocusScope {
 
   function calculateSunflowerCoords(index) {
     // Golden angle in radians
-    const goldenAngle = 2.39996;
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // ≈ 2.399963229728653
 
     // Angle: index * golden angle + global rotation
     let angle = (index * goldenAngle) + root.globalAngleOffset;
@@ -62,7 +61,7 @@ FocusScope {
     to: Math.PI * 2
     duration: root.orbitDuration
     loops: Animation.Infinite
-    running: root.opened && !root.isZoomed
+    running: root.opened
   }
   Behavior on spreadFactor {
     SpringAnimation {
@@ -80,14 +79,14 @@ FocusScope {
       isZoomed = false;
       selectedNodeData = null;
       root.zoomLevel = 1.0;
-      graphContainer.contentX = (root.mapSize - graphContainer.width) / 2;
-      graphContainer.contentY = (root.mapSize - graphContainer.height) / 2;
+      graphContainer.contentX = (root.mapSize * root.zoomLevel - graphContainer.width) / 2;
+      graphContainer.contentY = (root.mapSize * root.zoomLevel - graphContainer.height) / 2;
     } else {
       searchField.visible = false;
       currentIndex = -1;
       root.zoomLevel = 1.0;
-      graphContainer.contentX = (root.mapSize - graphContainer.width) / 2;
-      graphContainer.contentY = (root.mapSize - graphContainer.height) / 2;
+      graphContainer.contentX = (root.mapSize * root.zoomLevel - graphContainer.width) / 2;
+      graphContainer.contentY = (root.mapSize * root.zoomLevel - graphContainer.height) / 2;
     }
   }
   Keys.onPressed: event => {
@@ -134,25 +133,25 @@ FocusScope {
         return;
 
       // Smoothly pan flickable to keep node centered
-      let targetCX = node.targetX + node.width / 2 - graphContainer.width / 2;
-      let targetCY = node.targetY + node.height / 2 - graphContainer.height / 2;
+      let targetCX = (node.targetX + node.width / 2) * root.zoomLevel - graphContainer.width / 2;
+      let targetCY = (node.targetY + node.height / 2) * root.zoomLevel - graphContainer.height / 2;
 
       graphContainer.contentX = Math.max(0, Math.min(targetCX, graphContainer.contentWidth - graphContainer.width));
       graphContainer.contentY = Math.max(0, Math.min(targetCY, graphContainer.contentHeight - graphContainer.height));
     }
 
     anchors.fill: parent
-    contentWidth: root.mapSize
-    contentHeight: root.mapSize
+    contentWidth: root.mapSize * root.zoomLevel
+    contentHeight: root.mapSize * root.zoomLevel
     interactive: true
     clip: true
 
-    transform: [
+    contentItem.transform: [
       Scale {
         id: graphScale
 
-        origin.x: root.width / 2
-        origin.y: root.height / 2
+        origin.x: 0
+        origin.y: 0
         xScale: root.zoomLevel
         yScale: root.zoomLevel
 
@@ -171,25 +170,26 @@ FocusScope {
       }
     ]
 
+    // Center on PC node initially
+    Component.onCompleted: {
+      contentX = (root.mapSize * root.zoomLevel - root.width) / 2;
+      contentY = (root.mapSize * root.zoomLevel - root.height) / 2;
+    }
+
     Timer {
       interval: 16
       running: root.opened && root.isZoomed
       repeat: true
+
       onTriggered: {
         if (root.currentIndex >= 0 && root.currentIndex < nodeRepeater.count) {
           let node = nodeRepeater.itemAt(root.currentIndex);
           if (node) {
-            graphContainer.contentX = node.targetX + node.width / 2 - graphContainer.width * 0.3;
-            graphContainer.contentY = node.targetY + node.height / 2 - graphContainer.height / 2;
+            graphContainer.contentX = (node.targetX + node.width / 2) * root.zoomLevel - graphContainer.width * 0.3;
+            graphContainer.contentY = (node.targetY + node.height / 2) * root.zoomLevel - graphContainer.height / 2;
           }
         }
       }
-    }
-
-    // Center on PC node initially
-    Component.onCompleted: {
-      contentX = (root.mapSize - root.width) / 2;
-      contentY = (root.mapSize - root.height) / 2;
     }
 
     WheelHandler {
