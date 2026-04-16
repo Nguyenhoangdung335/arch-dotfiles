@@ -10,8 +10,14 @@ FocusScope {
   id: root
 
   HoverHandler {
+    id: globalMouseTracker
     acceptedDevices: PointerDevice.Mouse
-    onPointChanged: root.usingKeyboardNav = false
+    property point currentPos: point.position
+    onCurrentPosChanged: {
+      if (root.usingKeyboardNav) {
+        root.usingKeyboardNav = false
+      }
+    }
   }
 
   // Properties to control the layout
@@ -22,6 +28,7 @@ FocusScope {
   property string searchQueryLower: searchQuery.toLowerCase()
   property double lastKeyboardNavTime: 0
   property bool usingKeyboardNav: false
+  property bool bypassBehavior: false
 
   // Zoom state
   property bool isZoomed: false
@@ -88,14 +95,18 @@ FocusScope {
       isZoomed = false;
       selectedNodeData = null;
       root.zoomLevel = 1.0;
+      root.bypassBehavior = true;
       graphContainer.contentX = (root.mapSize * root.zoomLevel - graphContainer.width) / 2;
       graphContainer.contentY = (root.mapSize * root.zoomLevel - graphContainer.height) / 2;
+      root.bypassBehavior = false;
     } else {
       pcNode.isSearching = false;
       currentIndex = -1;
       root.zoomLevel = 1.0;
+      root.bypassBehavior = true;
       graphContainer.contentX = (root.mapSize * root.zoomLevel - graphContainer.width) / 2;
       graphContainer.contentY = (root.mapSize * root.zoomLevel - graphContainer.height) / 2;
+      root.bypassBehavior = false;
     }
   }
   Keys.onPressed: event => {
@@ -150,14 +161,14 @@ FocusScope {
     clip: true
 
     Behavior on contentX {
-      enabled: !graphContainer.dragging && !graphContainer.flicking
+      enabled: !graphContainer.dragging && !graphContainer.flicking && !root.bypassBehavior
       NumberAnimation {
         duration: 300
         easing.type: Easing.OutCubic
       }
     }
     Behavior on contentY {
-      enabled: !graphContainer.dragging && !graphContainer.flicking
+      enabled: !graphContainer.dragging && !graphContainer.flicking && !root.bypassBehavior
       NumberAnimation {
         duration: 300
         easing.type: Easing.OutCubic
@@ -326,12 +337,18 @@ FocusScope {
       z: 10
 
       onIsSearchingChanged: {
+        root.isZoomed = false;
         if (isSearching) {
-          root.isZoomed = false;
           root.currentIndex = -1;
-          graphContainer.contentX = (root.mapSize * root.zoomLevel - graphContainer.width) / 2;
-          graphContainer.contentY = (root.mapSize * root.zoomLevel - graphContainer.height) / 2;
         }
+        
+        let targetPcWidth = isSearching ? 220 : 60;
+        let targetMinRadius = 80 + Math.max(0, (targetPcWidth - 60) / 2);
+        let nodeCount = root.accessPointsModel ? root.accessPointsModel.count : 1;
+        let targetMapSize = Math.floor((targetMinRadius + root.sunflowerC * Math.sqrt(Math.max(1, nodeCount)) + root.offsetMaxPannable) * 2);
+        
+        graphContainer.contentX = (targetMapSize * root.zoomLevel - graphContainer.width) / 2;
+        graphContainer.contentY = (targetMapSize * root.zoomLevel - graphContainer.height) / 2;
       }
 
       onConnectRequested: (ssid, password) => {
