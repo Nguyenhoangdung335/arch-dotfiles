@@ -1,21 +1,3 @@
-local function read_ini_value(root_dir, key)
-	local ini = vim.fs.joinpath(root_dir, ".qmlls.ini")
-	if vim.fn.filereadable(ini) ~= 1 then
-		return nil
-	end
-
-	for _, line in ipairs(vim.fn.readfile(ini)) do
-		local value = line:match("^%s*" .. key .. "%s*=%s*(.-)%s*$")
-		if value then
-			value = value:gsub('^"(.*)"$', "%1")
-			value = value:gsub("^'(.*)'$", "%1")
-			return value
-		end
-	end
-
-	return nil
-end
-
 return {
 	{
 		"neovim/nvim-lspconfig",
@@ -141,8 +123,8 @@ return {
 	{
 		"mason-org/mason-lspconfig.nvim",
 		dependencies = { "mason-org/mason.nvim" },
-		-- configuration is done in nvim-lspconfig
 	},
+	-- region: lspsaga
 	{
 		"nvimdev/lspsaga.nvim",
 		dependencies = {
@@ -177,6 +159,8 @@ return {
 			},
 		},
 	},
+	--  endregion
+	-- region: lspkind
 	{
 		"onsails/lspkind.nvim",
 		opts = {
@@ -216,4 +200,5 @@ return {
 			require("lspkind").init(opts)
 		end,
 	},
+	-- endregion
 }
