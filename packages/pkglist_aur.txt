@@ -1,27 +1,34 @@
-android-sdk
-android-sdk-build-tools
-android-sdk-cmdline-tools-latest
-android-sdk-platform-tools
-binder_linux-dkms
-bridge-utils
-hyprsysteminfo
-hyprwayland-scanner-git
-input-remapper-bin
-lazydocker-bin
-nbfc-linux
-nbfc-qt
-oxker
-postman-bin
-python-imageio-ffmpeg
-python-screeninfo
-ripdrag
-sioyek
-smassh-bin
-unityhub
-vesktop
-visual-studio-code-bin
-wallust
-waypaper
-winboat-bin
-yay-bin
-zen-browser-bin
+android-sdk 26.1.1-2
+android-sdk-build-tools r37.0.0-1
+android-sdk-cmdline-tools-latest 20.0-1
+android-sdk-platform-tools 37.0.0-1
+binder_linux-dkms 6.19-2
+bridge-utils 1.7.1-5
+ddcci-driver-linux-dkms-git 1:0.4.5.r8.gbbb7553-1
+downgrade 12.0.1-1
+hyprsysteminfo 0.2.0-1
+hyprsysteminfo-debug 0.2.0-1
+hyprwayland-scanner-git 0.4.5.r1.gb3b0f1f-1
+input-remapper-bin 2.2.0-5
+lazydocker-bin 0.25.2-1
+nbfc-linux 0.4.1-1
+nbfc-qt 0.5.1-1
+postman-bin 12.11.0-1
+powerstat 0.04.05-1
+qqc2-desktop-style5 5.116.1-1
+qt5-3d 5.15.18-1
+qt5ct-kde 1.8-15
+qt6ct-kde 0.11-6
+ripdrag 0.4.12-1
+ruby-xdg 9.5.0-1
+sioyek 2.0.0-7
+smassh-bin 3.2.1-1
+superproductivity-bin 18.6.0-1
+tmuxinator 3.3.8-1
+trufflehog 3.95.3-1
+unityhub 3.18.0-1
+vesktop 1.6.5-1
+visual-studio-code-bin 1.120.0-1
+winboat-bin 0.9.0-1
+yay-bin 12.5.7-1
+zen-browser-bin 1.19.13b-1
